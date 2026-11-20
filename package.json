@@ -13,10 +13,16 @@
     "server:dev": "node --watch-path=server/index.js --watch-path=server/routes --watch-path=server/middleware --watch-path=server/services --watch-path=server/config server/index.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
     "date-fns": "^4.4.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "firebase": "^13.3.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.64.0",
+    "morgan": "^1.10.0",
     "qrcode": "^1.5.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

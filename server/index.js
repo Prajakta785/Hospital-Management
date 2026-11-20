@@ -83,24 +83,26 @@ app.get('*', (req, res, next) => {
     return next();
   }
 
-  const host = req.hostname || 'localhost';
-  const targetUrl = `http://${host}:5173${req.originalUrl || req.url || '/'}`;
-
-  // In production mode, serve the built Vite SPA index.html
-  if (process.env.NODE_ENV === 'production' && fs.existsSync(indexHtmlPath)) {
+  // If built frontend exists (production or local dist), serve it immediately
+  if (fs.existsSync(indexHtmlPath)) {
     return res.sendFile(indexHtmlPath);
   }
 
-  // In development, automatically redirect any browser request to Vite Frontend (port 5173)
-  if (req.accepts('html')) {
-    return res.redirect(targetUrl);
+  const host = req.hostname || 'localhost';
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.');
+
+  // ONLY redirect to port 5173 during local development (NEVER on Vercel / Cloud)
+  if (isLocal && !process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+    const targetUrl = `http://${host}:5173${req.originalUrl || req.url || '/'}`;
+    if (req.accepts('html')) {
+      return res.redirect(targetUrl);
+    }
   }
 
   res.json({
     status: 'online',
-    message: 'ApexCare Hospital API Server is active. Frontend is running on port 5173.',
-    frontendUrl: targetUrl,
-    healthCheck: `http://${host}:${PORT}/api/health`
+    message: 'ApexCare Hospital API Server is active.',
+    healthCheck: `/api/health`
   });
 });
 
@@ -113,7 +115,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Boot server
+// Boot standalone server (only when not running inside Vercel serverless functions)
 async function startServer() {
   await initDatabase();
   app.listen(PORT, () => {
@@ -125,6 +127,10 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
 
 /* reload_trigger: 1795084533699 */

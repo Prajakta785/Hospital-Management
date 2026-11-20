@@ -25,18 +25,31 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const STORE_PATH = path.join(DATA_DIR, 'hospital_store.json');
+const isVercel = Boolean(process.env.VERCEL);
+const DATA_DIR = isVercel ? '/tmp' : path.join(__dirname, '..', 'data');
+const BUNDLED_STORE_PATH = path.join(__dirname, '..', 'data', 'hospital_store.json');
+const STORE_PATH = isVercel ? path.join('/tmp', 'hospital_store.json') : BUNDLED_STORE_PATH;
 
 let mode = 'firestore_resilient_store';
 let storeData = null;
 
 // Ensure local persistent data directory exists
 if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch {}
 }
 
 function loadLocalStore() {
+  // On Vercel, copy bundled store file to writable /tmp if not already present
+  if (isVercel && !fs.existsSync(STORE_PATH) && fs.existsSync(BUNDLED_STORE_PATH)) {
+    try {
+      fs.copyFileSync(BUNDLED_STORE_PATH, STORE_PATH);
+    } catch (e) {
+      console.warn('Could not copy bundled store to /tmp:', e.message);
+    }
+  }
+
   if (fs.existsSync(STORE_PATH)) {
     try {
       const content = fs.readFileSync(STORE_PATH, 'utf-8');
