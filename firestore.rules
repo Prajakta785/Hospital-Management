@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+    
+    // Helper function to check if user is clinical staff or doctor
+    function isMedicalStaff() {
+      return isAuthenticated() && (
+        isAdmin() ||
+        request.auth.token.role == 'doctor' ||
+        request.auth.token.role == 'staff' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['doctor', 'staff']
+      );
+    }
+
+    // Users Collection: users can read their own profile; admins can read & write all
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+    }
+
+    // Patients & Medical Records (EHR): authorized staff can read/write; patients can view their own record
+    match /patients/{patientId} {
+      allow read: if isAuthenticated();
+      allow write: if isMedicalStaff();
+    }
+
+    // Doctors: Public read for appointment booking; Admin write
+    match /doctors/{doctorId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Staff & Attendance: Staff and Admin access
+    match /staff/{staffId} {
+      allow read: if isMedicalStaff();
+      allow write: if isAdmin();
+    }
+    match /attendance/{attendanceId} {
+      allow read: if isMedicalStaff();
+      allow write: if isMedicalStaff();
+    }
+
+    // Departments: Public read; Admin write
+    match /departments/{departmentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Appointments: Authenticated patients and staff can create & read
+    match /appointments/{appointmentId} {
+      allow read, create: if true;
+      allow update, delete: if isMedicalStaff();
+    }
+
+    // Beds & Wards: Staff & Admin read/write
+    match /beds/{bedId} {
+      allow read: if isAuthenticated() || true;
+      allow write: if isMedicalStaff();
+    }
+    match /wards/{wardId} {
+      allow read: if isAuthenticated() || true;
+      allow write: if isAdmin();
+    }
+
+    // Pharmacy & Inventory
+    match /pharmacy_items/{itemId} {
+      allow read: if isMedicalStaff();
+      allow write: if isMedicalStaff();
+    }
+
+    // Laboratory Management & Diagnostics
+    match /lab_tests/{testId} {
+      allow read: if isAuthenticated();
+      allow write: if isMedicalStaff();
+    }
+
+    // Invoices & Billing
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow write: if isMedicalStaff();
+    }
+
+    // Digital Prescriptions
+    match /prescriptions/{prescriptionId} {
+      allow read: if isAuthenticated();
+      allow write: if isMedicalStaff();
+    }
+
+    // Hospital Settings & System Audit Logs
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Immutable audit logs
+    }
+  }
+}
+

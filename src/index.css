@@ -1,0 +1,674 @@
+@import "tailwindcss";
+
+/* ========================================================
+   GLOBAL MODERN SLEEK SCROLLBAR & SCROLLING SYSTEM
+   ======================================================== */
+
+/* Smooth Scrolling & Section Anchoring */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Firefox-only standard scrollbar fallbacks (non-webkit browsers) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 transparent;
+  }
+  .dropdown-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #0284c7 #f1f5f9;
+  }
+  .admin-main-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #0284c7 transparent;
+  }
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #38bdf8 #0f2d52;
+  }
+}
+
+/* Eliminate All Retro OS Scrollbar Arrow Buttons Globally (Chromium & WebKit) */
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:single-button,
+::-webkit-scrollbar-button:vertical:decrement,
+::-webkit-scrollbar-button:vertical:increment,
+::-webkit-scrollbar-button:horizontal:decrement,
+::-webkit-scrollbar-button:horizontal:increment,
+*::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* WebKit / Chromium Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #64748b;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dedicated Dropdown / Popover Modern Sleek Scrollbar (For CustomSelect, Filter menus) */
+.dropdown-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.dropdown-scroll::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.dropdown-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 9999px !important;
+  margin: 3px 0 !important;
+}
+
+.dropdown-scroll::-webkit-scrollbar-thumb {
+  background: #059669 !important;
+  border-radius: 9999px !important;
+  border: 1px solid #f1f5f9 !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background: #047857 !important;
+}
+
+.dropdown-scroll::-webkit-scrollbar-thumb:active {
+  background: #064e3b !important;
+}
+
+.dropdown-scroll::-webkit-scrollbar-button,
+.dropdown-scroll::-webkit-scrollbar-button:single-button,
+.dropdown-scroll::-webkit-scrollbar-button:vertical:decrement,
+.dropdown-scroll::-webkit-scrollbar-button:vertical:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Dedicated Admin Main Content Sleek Scrollbar */
+.admin-main-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-main-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-main-scroll::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 9999px;
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-main-scroll::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+.admin-main-scroll::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Custom dark forest green scrollbar for sidebar - full height single scroll */
+.sidebar-scrollbar {
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #022c22;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 9999px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #34d399;
+}
+
+/* ========================================================
+   PORTAL SIDEBAR RESPONSIVE BEHAVIOR (DESKTOP & MOBILE)
+   Ensures desktop web view ALWAYS has permanently visible sidebar
+   ======================================================== */
+@media (min-width: 768px) {
+  .portal-sidebar {
+    position: static !important;
+    transform: none !important;
+    translate: none !important;
+    display: flex !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .portal-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 50 !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  .portal-sidebar.sidebar-closed {
+    transform: translateX(-100%) !important;
+    translate: -100% 0 !important;
+    box-shadow: none !important;
+  }
+  .portal-sidebar.sidebar-open {
+    transform: translateX(0) !important;
+    translate: 0 0 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  }
+}
+
+/* Prominent, high-visibility scrollbar for wide data tables & modals */
+.table-scrollbar {
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #059669 #f1f5f9;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.table-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+.table-scrollbar::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 9999px;
+  border: 1.5px solid #f1f5f9;
+}
+
+.table-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+/* Hide scrollbar for tabs with smooth swipe */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+@layer base {
+  :root {
+    --primary: #042f1a;
+    --primary-light: #059669;
+    --primary-dark: #022c22;
+    --accent-green: #10b981;
+    --accent-mint: #d1fae5;
+    --accent-gold: #059669;
+    --accent-gold-light: #10b981;
+    --accent-gold-subtle: #d1fae5;
+    --bg-page: #f8fafc;
+  }
+
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Print Styles for Official Slips, Invoices, and Hospital Reports */
+@media print {
+  @page {
+    size: auto;
+    margin: 8mm 10mm;
+  }
+
+  /* 1. Global Document Reset for Clean Crisp Rendering */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Never render any scrollbars on printed sheets */
+  ::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  /* 2. When printing a modal, completely hide background app (#root) */
+  body.modal-open #root,
+  body.is-printing #root,
+  body:has(.hospital-modal-portal) #root {
+    display: none !important;
+  }
+
+  /* 3. Global hides: buttons, sidebars, navbars, toasts, tickers, close icons */
+  header,
+  footer,
+  nav,
+  aside,
+  button,
+  .no-print,
+  .no-print *,
+  .ticker-mask,
+  [aria-label="Close modal"],
+  [aria-label="Close"],
+  [role="alert"],
+  #toast-container {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 4. Modal Portal display in normal flow */
+  .hospital-modal-portal {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: auto !important;
+  }
+
+  /* Hide modal backdrop and dark overlay */
+  .hospital-modal-portal > div:first-child,
+  .fixed.inset-0.bg-slate-900\/60,
+  .backdrop-blur-xs {
+    display: none !important;
+  }
+
+  /* Modal wrapper dialog reset */
+  .hospital-modal-portal > div:last-child {
+    display: block !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .hospital-modal-box {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    transform: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .modal-header {
+    display: none !important;
+  }
+
+  .modal-body {
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* 5. Printable Area: Natural Paper Fit */
+  .printable-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  /* Table and data grid print formatting - prevent clipping and scrollbars */
+  .table-scrollbar,
+  .overflow-x-auto,
+  .overflow-y-auto {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  th, td {
+    overflow: visible !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  .printable-area * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 6. Fallback if printing from direct page (not inside modal) */
+  #root,
+  #root > div,
+  main {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    transform: none !important;
+  }
+
+  *, *:before, *:after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Custom Split-Entrance Animations for Facility Tour & Interactive Showcase */
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px) scale(0.96);
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slideInFromLeft 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-right {
+  animation: slideInFromRight 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+/* Dashboard & Card Entrance Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-float {
+  animation: floatGentle 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+
+.delay-50 {
+  animation-delay: 50ms;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-150 {
+  animation-delay: 150ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-250 {
+  animation-delay: 250ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-350 {
+  animation-delay: 350ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+/* ==========================================================================
+   AUTO-SCROLLING TICKER MARQUEE
+   ========================================================================== */
+@keyframes tickerMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-ticker {
+  display: flex;
+  width: max-content;
+  animation: tickerMarquee 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
+.ticker-mask {
+  mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+
+/* ==========================================================================
+   ANIMATED STAT BOXES & KPI CARDS (ALL PANELS)
+   ========================================================================== */
+@keyframes statCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stat-box-animated {
+  animation: statCardFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+}
+
+.stat-box-animated:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  border-color: rgba(2, 132, 199, 0.35);
+}
+
+.stat-box-animated::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, #0284c7, #1d4ed8);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.stat-box-animated:hover::before {
+  opacity: 1;
+}
+
+.stat-box-animated:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.stat-number-pop {
+  transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1), color 0.2s ease;
+  display: inline-block;
+}
+
+.stat-box-animated:hover .stat-number-pop {
+  transform: scale(1.08);
+  transform-origin: left center;
+}
+
+.stat-icon-bounce {
+  transition: transform 0.3s cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+.stat-box-animated:hover .stat-icon-bounce {
+  transform: scale(1.15) rotate(4deg);
+}
+
+
+
+

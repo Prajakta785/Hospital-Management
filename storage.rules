@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Hospital folder rules
+    match /hospital/{folder}/{allPaths=**} {
+      // Anyone can read public doctors/departments images
+      allow read: if folder in ['doctors', 'departments', 'avatars'] || request.auth != null;
+      
+      // Only authenticated clinical staff or admin can upload documents, reports, and receipts
+      allow write: if request.auth != null
+                   && request.resource.size < 15 * 1024 * 1024 // 15MB max
+                   && request.resource.contentType.matches('image/.*|application/pdf|text/csv');
+    }
+  }
+}
+

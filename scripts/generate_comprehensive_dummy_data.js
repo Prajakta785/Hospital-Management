@@ -1,0 +1,1872 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '..');
+const STORE_PATH = path.join(ROOT_DIR, 'server', 'data', 'hospital_store.json');
+const SEED_PATH = path.join(ROOT_DIR, 'server', 'seeds', 'seedData.js');
+
+const defaultUsers = [
+  {
+    id: 1,
+    name: "Dr. Marcus Vance",
+    email: "admin@hospital.com",
+    password_hash: "$2b$10$mT8481NK8Qlw1yyx2Q6FRu3vvUDopARLvRV8hBQPKnoQBFd4UHA1.",
+    role: "admin",
+    phone: "+1 (555) 019-2834",
+    avatar: "/images/doctors/doctor-2.jpg",
+    status: "active"
+  },
+  {
+    id: 2,
+    name: "Dr. Eleanor Hayes",
+    email: "doctor@hospital.com",
+    password_hash: "$2b$10$mT8481NK8Qlw1yyx2Q6FRu3vvUDopARLvRV8hBQPKnoQBFd4UHA1.",
+    role: "doctor",
+    phone: "+1 (555) 019-8821",
+    avatar: "/images/doctors/doctor-1.jpg",
+    status: "active"
+  },
+  {
+    id: 3,
+    name: "Sarah Jenkins, RN",
+    email: "staff@hospital.com",
+    password_hash: "$2b$10$mT8481NK8Qlw1yyx2Q6FRu3vvUDopARLvRV8hBQPKnoQBFd4UHA1.",
+    role: "staff",
+    phone: "+1 (555) 019-3342",
+    avatar: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&q=80",
+    status: "active"
+  },
+  {
+    id: 4,
+    name: "David Miller",
+    email: "patient@hospital.com",
+    password_hash: "$2b$10$mT8481NK8Qlw1yyx2Q6FRu3vvUDopARLvRV8hBQPKnoQBFd4UHA1.",
+    role: "patient",
+    phone: "+1 (555) 019-7756",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+    status: "active"
+  }
+];
+
+const defaultDepartments = [
+  {
+    id: 1,
+    name: "Cardiology & Vascular Center",
+    code: "CARD",
+    description: "Advanced cardiac intervention, electrophysiology, echocardiography, and preventative heart wellness programs.",
+    icon: "HeartPulse",
+    head_doctor_name: "Dr. Eleanor Hayes, MD, FACC",
+    floor_location: "Building A, 3rd Floor",
+    phone_extension: "3101",
+    image_url: "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 2,
+    name: "Neurology & Neurosurgery",
+    code: "NEUR",
+    description: "Cutting-edge neurological diagnostics, acute stroke care, epilepsy monitoring, and minimally invasive spine surgeries.",
+    icon: "Brain",
+    head_doctor_name: "Dr. Julian Sterling, MD, PhD",
+    floor_location: "Building B, 4th Floor",
+    phone_extension: "4205",
+    image_url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 3,
+    name: "Orthopedics & Joint Replacement",
+    code: "ORTH",
+    description: "Computer-navigated robotic joint replacements, sports medicine, trauma surgery, and comprehensive physical rehabilitation.",
+    icon: "Bone",
+    head_doctor_name: "Dr. Sophia Alva, MS Ortho",
+    floor_location: "Building A, 2nd Floor",
+    phone_extension: "2104",
+    image_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 4,
+    name: "Pediatrics & Neonatal ICU",
+    code: "PED",
+    description: "Compassionate child healthcare from neonatal intensive care to adolescent medicine with child-friendly facilities.",
+    icon: "Baby",
+    head_doctor_name: "Dr. Maya Lin, MD, FAAP",
+    floor_location: "Building C, 1st Floor",
+    phone_extension: "1108",
+    image_url: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 5,
+    name: "Oncology & Precision Therapeutics",
+    code: "ONC",
+    description: "Multidisciplinary tumor boards, immunotherapy, precision targeted therapies, and compassionate supportive palliative care.",
+    icon: "Microscope",
+    head_doctor_name: "Dr. Robert Chen, MD",
+    floor_location: "Cancer Center, 5th Floor",
+    phone_extension: "5302",
+    image_url: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 6,
+    name: "Diagnostic Radiology & Imaging",
+    code: "RAD",
+    description: "3T high-resolution MRI, dual-source 128-slice CT, digital mammography, 4D ultrasound, and image-guided biopsies.",
+    icon: "Scan",
+    head_doctor_name: "Dr. Claire Dupont, MD",
+    floor_location: "Ground Floor, Diagnostic Wing",
+    phone_extension: "0150",
+    image_url: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 7,
+    name: "Emergency & Level-1 Trauma",
+    code: "ER",
+    description: "24/7 dedicated rapid-response resuscitation bay, board-certified trauma surgeons, on-site blood bank, and helipad.",
+    icon: "Ambulance",
+    head_doctor_name: "Dr. Ethan Wright, MD, FACEP",
+    floor_location: "Ground Floor, North Entrance",
+    phone_extension: "9999",
+    image_url: "https://images.unsplash.com/photo-1587745416684-47953f16f02f?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 8,
+    name: "Obstetrics & Women's Health",
+    code: "OBGYN",
+    description: "High-risk pregnancy management, private birthing suites, fertility evaluations, and minimally invasive gynecological surgery.",
+    icon: "Stethoscope",
+    head_doctor_name: "Dr. Samantha Reynolds, MD, FACOG",
+    floor_location: "Building C, 3rd Floor",
+    phone_extension: "3309",
+    image_url: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=800&q=80"
+  }
+];
+
+const defaultDoctors = [
+  {
+    id: 1,
+    user_id: 2,
+    name: "Dr. Eleanor Hayes",
+    specialty: "Interventional Cardiology",
+    department_id: 1,
+    qualifications: "MD (Harvard), FACC, FSCAI",
+    experience_years: 16,
+    consultation_fee: 1200.00,
+    available_days: "Mon, Wed, Fri",
+    available_time_slots: "09:00 AM, 10:00 AM, 11:30 AM, 02:00 PM, 03:30 PM",
+    room_number: "Suite 302",
+    bio: "Chief of Interventional Cardiology with over 4,000 successful coronary and structural heart procedures. Fellowship trained at Massachusetts General Hospital.",
+    avatar: "/images/doctors/doctor-1.jpg",
+    rating: 4.95,
+    status: "active"
+  },
+  {
+    id: 2,
+    user_id: null,
+    name: "Dr. Julian Sterling",
+    specialty: "Neurosurgery & Spine",
+    department_id: 2,
+    qualifications: "MD, PhD (Johns Hopkins), FAANS",
+    experience_years: 18,
+    consultation_fee: 1500.00,
+    available_days: "Tue, Thu, Sat",
+    available_time_slots: "09:30 AM, 11:00 AM, 02:30 PM, 04:00 PM",
+    room_number: "Suite 415",
+    bio: "Internationally recognized neurosurgeon specializing in complex cranial base surgery, acoustic neuromas, and endoscopic pituitary tumors.",
+    avatar: "/images/doctors/doctor-2.jpg",
+    rating: 4.98,
+    status: "active"
+  },
+  {
+    id: 3,
+    user_id: null,
+    name: "Dr. Sophia Alva",
+    specialty: "Orthopedic & Robotic Joint Surgery",
+    department_id: 3,
+    qualifications: "MS Ortho, FAAOS, Fellowship Mayo Clinic",
+    experience_years: 14,
+    consultation_fee: 1100.00,
+    available_days: "Mon, Tue, Thu, Fri",
+    available_time_slots: "10:00 AM, 11:30 AM, 01:30 PM, 03:00 PM",
+    room_number: "Suite 208",
+    bio: "Pioneer in MAKO robotic-arm assisted total knee and hip replacements. Passionate about rapid recovery protocols and athlete rehabilitation.",
+    avatar: "/images/doctors/doctor-3.jpg",
+    rating: 4.92,
+    status: "active"
+  },
+  {
+    id: 4,
+    user_id: null,
+    name: "Dr. Maya Lin",
+    specialty: "Pediatric Critical Care",
+    department_id: 4,
+    qualifications: "MD (Stanford), FAAP",
+    experience_years: 12,
+    consultation_fee: 900.00,
+    available_days: "Mon, Wed, Thu, Sat",
+    available_time_slots: "09:00 AM, 10:30 AM, 01:00 PM, 02:30 PM",
+    room_number: "Suite 112",
+    bio: "Dedicated pediatric specialist recognized for compassionate care and family-centric approach in treating acute childhood respiratory illnesses.",
+    avatar: "/images/doctors/doctor-4.jpg",
+    rating: 4.96,
+    status: "active"
+  },
+  {
+    id: 5,
+    user_id: null,
+    name: "Dr. Robert Chen",
+    specialty: "Medical Oncology",
+    department_id: 5,
+    qualifications: "MD, DM Oncology (Columbia Univ), FASCO",
+    experience_years: 20,
+    consultation_fee: 1400.00,
+    available_days: "Tue, Wed, Fri",
+    available_time_slots: "10:00 AM, 12:00 PM, 03:00 PM, 04:30 PM",
+    room_number: "Suite 501",
+    bio: "Leading clinical trial researcher in personalized immunotherapy and targeted kinase inhibitors for gastrointestinal and thoracic malignancies.",
+    avatar: "/images/doctors/doctor-5.jpg",
+    rating: 4.94,
+    status: "active"
+  },
+  {
+    id: 6,
+    user_id: null,
+    name: "Dr. Samantha Reynolds",
+    specialty: "Maternal-Fetal Medicine & Obstetrics",
+    department_id: 8,
+    qualifications: "MD, FACOG (UCSF)",
+    experience_years: 15,
+    consultation_fee: 1200.00,
+    available_days: "Mon, Tue, Wed, Fri",
+    available_time_slots: "08:30 AM, 10:00 AM, 11:30 AM, 02:00 PM",
+    room_number: "Suite 330",
+    bio: "Specializing in high-risk pregnancies, multiple gestations, prenatal diagnostics, and natural gentle cesarean deliveries.",
+    avatar: "/images/doctors/doctor-6.jpg",
+    rating: 4.97,
+    status: "active"
+  },
+  {
+    id: 7,
+    user_id: null,
+    name: "Dr. Claire Dupont",
+    specialty: "Diagnostic Radiology & Imaging",
+    department_id: 6,
+    qualifications: "MD (Yale), European Board of Radiology",
+    experience_years: 13,
+    consultation_fee: 1000.00,
+    available_days: "Mon, Wed, Fri, Sat",
+    available_time_slots: "09:00 AM, 11:00 AM, 02:00 PM, 04:00 PM",
+    room_number: "Suite 150",
+    bio: "Specialist in cardiovascular MRI, neuroimaging, digital mammography, and ultrasound-guided diagnostic interventions.",
+    avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80",
+    rating: 4.91,
+    status: "active"
+  },
+  {
+    id: 8,
+    user_id: null,
+    name: "Dr. Ethan Wright",
+    specialty: "Emergency & Level-1 Trauma",
+    department_id: 7,
+    qualifications: "MD, FACEP, Trauma Critical Care Fellowship",
+    experience_years: 17,
+    consultation_fee: 1100.00,
+    available_days: "Daily Emergency Rotation",
+    available_time_slots: "24/7 Trauma Roster",
+    room_number: "ER Bay 1",
+    bio: "Chief of Emergency Services. Expert in rapid ultrasound in shock, advanced airway management, and acute disaster triage protocols.",
+    avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=400&q=80",
+    rating: 4.99,
+    status: "active"
+  },
+  {
+    id: 9,
+    user_id: null,
+    name: "Dr. Sameer Kulkarni",
+    specialty: "Gastroenterology & Hepatology",
+    department_id: 1,
+    qualifications: "MD, DM Gastroenterology (AIIMS)",
+    experience_years: 15,
+    consultation_fee: 1250.00,
+    available_days: "Mon, Tue, Thu, Sat",
+    available_time_slots: "10:30 AM, 12:30 PM, 03:00 PM, 05:00 PM",
+    room_number: "Suite 224",
+    bio: "Expert in therapeutic endoscopy, colonoscopy, ERCP, liver disorders, inflammatory bowel disease (IBD), and metabolic liver health.",
+    avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80",
+    rating: 4.93,
+    status: "active"
+  },
+  {
+    id: 10,
+    user_id: null,
+    name: "Dr. Neha Kapoor",
+    specialty: "Clinical Dermatology & Trichology",
+    department_id: 8,
+    qualifications: "MD Dermatology (PGI), DVD",
+    experience_years: 11,
+    consultation_fee: 850.00,
+    available_days: "Tue, Thu, Fri, Sat",
+    available_time_slots: "11:00 AM, 01:00 PM, 04:00 PM, 06:00 PM",
+    room_number: "Suite 118",
+    bio: "Specializing in autoimmune skin disorders, eczema, pediatric dermatology, and advanced dermatological laser procedures.",
+    avatar: "https://images.unsplash.com/photo-1594824813633-46c4f287955c?auto=format&fit=crop&w=400&q=80",
+    rating: 4.88,
+    status: "active"
+  }
+];
+
+const defaultPatients = [
+  {
+    id: 1,
+    user_id: 4,
+    mrn: "MRN-2026-0814",
+    first_name: "David",
+    last_name: "Miller",
+    dob: "1988-04-12",
+    age: 38,
+    gender: "Male",
+    blood_group: "O+",
+    phone: "+1 (555) 019-7756",
+    email: "patient@hospital.com",
+    address: "742 Evergreen Terrace, Springfield, IL",
+    emergency_contact_name: "Emily Miller (Spouse)",
+    emergency_contact_phone: "+1 (555) 019-7758",
+    allergies: "Penicillin, Shellfish",
+    medical_history: "Mild hypertension (controlled), seasonal allergic rhinitis.",
+    insurance_provider: "BlueCross BlueShield Premier",
+    insurance_policy_number: "BCBS-99482103",
+    admission_status: "outpatient"
+  },
+  {
+    id: 2,
+    user_id: null,
+    mrn: "MRN-2026-0922",
+    first_name: "Clara",
+    last_name: "Oswald",
+    dob: "1994-11-23",
+    age: 31,
+    gender: "Female",
+    blood_group: "A+",
+    phone: "+1 (555) 432-8891",
+    email: "clara.oswald@example.com",
+    address: "12 Baker Street, Unit 4B, Boston, MA",
+    emergency_contact_name: "George Oswald (Father)",
+    emergency_contact_phone: "+1 (555) 432-8890",
+    allergies: "Sulfa antibiotics",
+    medical_history: "Post-operative knee arthroscopy recovery, migraine prophylaxis.",
+    insurance_provider: "Aetna Health Plus",
+    insurance_policy_number: "AET-3321908",
+    admission_status: "inpatient"
+  },
+  {
+    id: 3,
+    user_id: null,
+    mrn: "MRN-2026-1045",
+    first_name: "Arthur",
+    last_name: "Pendelton",
+    dob: "1958-07-19",
+    age: 68,
+    gender: "Male",
+    blood_group: "B+",
+    phone: "+1 (555) 890-1122",
+    email: "arthur.p@example.com",
+    address: "88 Willow Creek Blvd, Chicago, IL",
+    emergency_contact_name: "Martha Pendelton (Wife)",
+    emergency_contact_phone: "+1 (555) 890-1123",
+    allergies: "Aspirin, Iodine Contrast",
+    medical_history: "Type 2 Diabetes Mellitus, Coronary Artery Disease with DES stent (2023).",
+    insurance_provider: "Medicare Choice",
+    insurance_policy_number: "MED-88741029",
+    admission_status: "inpatient"
+  },
+  {
+    id: 4,
+    user_id: null,
+    mrn: "MRN-2026-1110",
+    first_name: "Zoe",
+    last_name: "Kovacs",
+    dob: "2018-09-05",
+    age: 7,
+    gender: "Female",
+    blood_group: "AB+",
+    phone: "+1 (555) 671-9988",
+    email: "elena.kovacs@example.com",
+    address: "410 Meadow Lane, Evanston, IL",
+    emergency_contact_name: "Elena Kovacs (Mother)",
+    emergency_contact_phone: "+1 (555) 671-9988",
+    allergies: "Peanuts",
+    medical_history: "Childhood asthma, fully vaccinated.",
+    insurance_provider: "UnitedHealthcare CarePass",
+    insurance_policy_number: "UHC-7740192",
+    admission_status: "outpatient"
+  },
+  {
+    id: 5,
+    user_id: null,
+    mrn: "MRN-2026-1125",
+    first_name: "Rajesh",
+    last_name: "Sharma",
+    dob: "1981-06-14",
+    age: 45,
+    gender: "Male",
+    blood_group: "B+",
+    phone: "+91 98201 44521",
+    email: "rajesh.sharma@example.com",
+    address: "A-402 Greenfield Heights, Andheri West, Mumbai",
+    emergency_contact_name: "Sunita Sharma (Wife)",
+    emergency_contact_phone: "+91 98201 44522",
+    allergies: "None",
+    medical_history: "Essential Hypertension, exertional chest discomfort undergoing coronary evaluation.",
+    insurance_provider: "Star Health Comprehensive",
+    insurance_policy_number: "STAR-992140",
+    admission_status: "inpatient"
+  },
+  {
+    id: 6,
+    user_id: null,
+    mrn: "MRN-2026-1134",
+    first_name: "Pooja",
+    last_name: "Patel",
+    dob: "1997-03-28",
+    age: 29,
+    gender: "Female",
+    blood_group: "O+",
+    phone: "+91 98112 55430",
+    email: "pooja.patel@example.com",
+    address: "Flat 12B, Symphony Towers, Viman Nagar, Pune",
+    emergency_contact_name: "Karan Patel (Husband)",
+    emergency_contact_phone: "+91 98112 55431",
+    allergies: "NSAIDs (Ibuprofen)",
+    medical_history: "Second trimester gestation (28 weeks), routine antenatal monitoring.",
+    insurance_provider: "HDFC ERGO Health Suraksha",
+    insurance_policy_number: "HDFC-771409",
+    admission_status: "inpatient"
+  },
+  {
+    id: 7,
+    user_id: null,
+    mrn: "MRN-2026-1142",
+    first_name: "Vikramaditya",
+    last_name: "Rao",
+    dob: "1972-10-18",
+    age: 54,
+    gender: "Male",
+    blood_group: "A-",
+    phone: "+91 99304 88712",
+    email: "v.rao@example.com",
+    address: "501 Silver Oak Residency, Baner, Pune",
+    emergency_contact_name: "Radhika Rao (Daughter)",
+    emergency_contact_phone: "+91 99304 88715",
+    allergies: "Ciprofloxacin",
+    medical_history: "Type 2 Diabetes Mellitus for 8 years, diabetic retinopathy screening.",
+    insurance_provider: "Max Bupa Health Companion",
+    insurance_policy_number: "MAX-881240",
+    admission_status: "outpatient"
+  },
+  {
+    id: 8,
+    user_id: null,
+    mrn: "MRN-2026-1150",
+    first_name: "Sunita",
+    last_name: "Deshmukh",
+    dob: "1964-08-09",
+    age: 62,
+    gender: "Female",
+    blood_group: "B-",
+    phone: "+91 98450 11299",
+    email: "sunita.d@example.com",
+    address: "Bungalow 7, Model Colony, Shivajinagar, Pune",
+    emergency_contact_name: "Anand Deshmukh (Son)",
+    emergency_contact_phone: "+91 98450 11298",
+    allergies: "Codeine, Morphine",
+    medical_history: "Severe bilateral osteoarthritis, scheduled for MAKO robotic total hip arthroplasty.",
+    insurance_provider: "Care Health Senior First",
+    insurance_policy_number: "CARE-441092",
+    admission_status: "inpatient"
+  },
+  {
+    id: 9,
+    user_id: null,
+    mrn: "MRN-2026-1163",
+    first_name: "Aarav",
+    last_name: "Mehta",
+    dob: "2021-04-15",
+    age: 5,
+    gender: "Male",
+    blood_group: "O+",
+    phone: "+91 97665 44321",
+    email: "neha.mehta@example.com",
+    address: "C-104 Lakeview Enclave, Thane West, Mumbai",
+    emergency_contact_name: "Neha Mehta (Mother)",
+    emergency_contact_phone: "+91 97665 44321",
+    allergies: "Dairy Products (Lactose)",
+    medical_history: "Bronchopneumonia recovery, nebulization therapy and pediatric monitoring.",
+    insurance_provider: "Niva Bupa ReAssure",
+    insurance_policy_number: "NIVA-662198",
+    admission_status: "inpatient"
+  },
+  {
+    id: 10,
+    user_id: null,
+    mrn: "MRN-2026-1178",
+    first_name: "Ananya",
+    last_name: "Iyer",
+    dob: "2002-12-04",
+    age: 24,
+    gender: "Female",
+    blood_group: "AB-",
+    phone: "+91 98213 77401",
+    email: "ananya.iyer@example.com",
+    address: "Flat 303, Palm Grove, Powai, Mumbai",
+    emergency_contact_name: "R. Iyer (Father)",
+    emergency_contact_phone: "+91 98213 77402",
+    allergies: "None",
+    medical_history: "Refractory migraine with visual aura, undergoing neuro-ophthalmology triage.",
+    insurance_provider: "Tata AIG MediCare",
+    insurance_policy_number: "TATA-554210",
+    admission_status: "outpatient"
+  },
+  {
+    id: 11,
+    user_id: null,
+    mrn: "MRN-2026-1185",
+    first_name: "Suresh",
+    last_name: "Kulkarni",
+    dob: "1967-02-11",
+    age: 59,
+    gender: "Male",
+    blood_group: "A+",
+    phone: "+91 98902 33411",
+    email: "suresh.k@example.com",
+    address: "24 Nilkanth Society, Kothrud, Pune",
+    emergency_contact_name: "Smita Kulkarni (Wife)",
+    emergency_contact_phone: "+91 98902 33412",
+    allergies: "Penicillin",
+    medical_history: "Cholelithiasis with acute cholecystitis, post laparoscopic cholecystectomy day 1.",
+    insurance_provider: "Star Health Premier",
+    insurance_policy_number: "STAR-774019",
+    admission_status: "inpatient"
+  },
+  {
+    id: 12,
+    user_id: null,
+    mrn: "MRN-2026-1191",
+    first_name: "Meera",
+    last_name: "Joshi",
+    dob: "1990-09-17",
+    age: 36,
+    gender: "Female",
+    blood_group: "O+",
+    phone: "+91 98234 66100",
+    email: "meera.joshi@example.com",
+    address: "Plot 45, Mayur Colony, Karve Road, Pune",
+    emergency_contact_name: "Aditya Joshi (Husband)",
+    emergency_contact_phone: "+91 98234 66102",
+    allergies: "None",
+    medical_history: "Hashimoto's Thyroiditis, routine T3/T4/TSH titration and endocrine follow-up.",
+    insurance_provider: "ICICI Lombard Complete Health",
+    insurance_policy_number: "ICICI-331908",
+    admission_status: "outpatient"
+  },
+  {
+    id: 13,
+    user_id: null,
+    mrn: "MRN-2026-1204",
+    first_name: "Farhan",
+    last_name: "Khan",
+    dob: "1984-05-30",
+    age: 42,
+    gender: "Male",
+    blood_group: "B+",
+    phone: "+91 99200 11984",
+    email: "farhan.khan@example.com",
+    address: "Flat 801, Sea Breeze, Bandra West, Mumbai",
+    emergency_contact_name: "Zainab Khan (Sister)",
+    emergency_contact_phone: "+91 99200 11985",
+    allergies: "Erythromycin",
+    medical_history: "Acute ACL ligament tear during football, knee brace and physiotherapy regimen.",
+    insurance_provider: "HDFC ERGO Optima Secure",
+    insurance_policy_number: "HDFC-991204",
+    admission_status: "outpatient"
+  },
+  {
+    id: 14,
+    user_id: null,
+    mrn: "MRN-2026-1212",
+    first_name: "Kavita",
+    last_name: "Nambiar",
+    dob: "1975-01-22",
+    age: 51,
+    gender: "Female",
+    blood_group: "A+",
+    phone: "+91 98190 22345",
+    email: "kavita.n@example.com",
+    address: "B-202 Heritage Woods, Hiranandani Estate, Thane",
+    emergency_contact_name: "Ravi Nambiar (Husband)",
+    emergency_contact_phone: "+91 98190 22346",
+    allergies: "Dust Mites, Pollen",
+    medical_history: "Paroxysmal Supraventricular Tachycardia (PSVT), telemetry observation.",
+    insurance_provider: "Max Bupa ReAssure 2.0",
+    insurance_policy_number: "MAX-441209",
+    admission_status: "inpatient"
+  },
+  {
+    id: 15,
+    user_id: null,
+    mrn: "MRN-2026-1220",
+    first_name: "Rohan",
+    last_name: "Gaikwad",
+    dob: "2007-08-11",
+    age: 19,
+    gender: "Male",
+    blood_group: "O-",
+    phone: "+91 97654 32109",
+    email: "rohan.g@example.com",
+    address: "Shree Krupa Society, Sadashiv Peth, Pune",
+    emergency_contact_name: "Sunil Gaikwad (Father)",
+    emergency_contact_phone: "+91 97654 32108",
+    allergies: "None",
+    medical_history: "Acute viral gastroenteritis with moderate dehydration, ORS & IV fluids administered.",
+    insurance_provider: "Self-Pay / Corporate Ayushman",
+    insurance_policy_number: "AYUSH-99410",
+    admission_status: "outpatient"
+  }
+];
+
+const defaultWards = [
+  { id: 1, name: "Intensive Cardiac Care Unit (ICCU)", type: "ICU", floor_number: 3, daily_rate: 6500.00, total_beds: 4 },
+  { id: 2, name: "Surgical Recovery Ward", type: "General Ward", floor_number: 2, daily_rate: 1500.00, total_beds: 6 },
+  { id: 3, name: "Emerald Executive Suites", type: "Private Suite", floor_number: 4, daily_rate: 5500.00, total_beds: 4 },
+  { id: 4, name: "Pediatric Sunshine Wing", type: "Pediatric Care", floor_number: 1, daily_rate: 2200.00, total_beds: 4 },
+  { id: 5, name: "Maternity & Neonatal Wing", type: "Maternity Ward", floor_number: 3, daily_rate: 3500.00, total_beds: 4 },
+  { id: 6, name: "Emergency & Trauma Resuscitation", type: "Emergency", floor_number: 1, daily_rate: 4000.00, total_beds: 4 }
+];
+
+const defaultBeds = [
+  // Ward 1: ICCU
+  { id: 1, ward_id: 1, bed_number: "ICU-101", status: "occupied", current_patient_id: 3, admitted_at: "2026-11-03T08:30:00Z", notes: "Post-cardiac catheterization telemetry" },
+  { id: 2, ward_id: 1, bed_number: "ICU-102", status: "occupied", current_patient_id: 5, admitted_at: "2026-11-04T12:15:00Z", notes: "Continuous arterial BP & ECG telemetry monitoring" },
+  { id: 3, ward_id: 1, bed_number: "ICU-103", status: "available", current_patient_id: null, admitted_at: null, notes: "Fully sanitized, ventilator calibrated" },
+  { id: 4, ward_id: 1, bed_number: "ICU-104", status: "maintenance", current_patient_id: null, admitted_at: null, notes: "Multipara cardiac monitor routine servicing" },
+
+  // Ward 2: General Surgical
+  { id: 5, ward_id: 2, bed_number: "GEN-201", status: "occupied", current_patient_id: 2, admitted_at: "2026-11-03T14:15:00Z", notes: "Knee arthroscopy post-op day 2 recovery" },
+  { id: 6, ward_id: 2, bed_number: "GEN-202", status: "occupied", current_patient_id: 11, admitted_at: "2026-11-04T09:00:00Z", notes: "Post-laparoscopic cholecystectomy observation" },
+  { id: 7, ward_id: 2, bed_number: "GEN-203", status: "available", current_patient_id: null, admitted_at: null, notes: "Ready for post-op admissions" },
+  { id: 8, ward_id: 2, bed_number: "GEN-204", status: "available", current_patient_id: null, admitted_at: null, notes: "Sanitized and sterilized bedding" },
+  { id: 9, ward_id: 2, bed_number: "GEN-205", status: "available", current_patient_id: null, admitted_at: null, notes: "Clean and ready" },
+  { id: 10, ward_id: 2, bed_number: "GEN-206", status: "maintenance", current_patient_id: null, admitted_at: null, notes: "Electric motorized frame wheel inspection" },
+
+  // Ward 3: Private Suites
+  { id: 11, ward_id: 3, bed_number: "STE-401", status: "occupied", current_patient_id: 8, admitted_at: "2026-11-04T16:00:00Z", notes: "Pre-op MAKO robotic hip arthroplasty suite" },
+  { id: 12, ward_id: 3, bed_number: "STE-402", status: "occupied", current_patient_id: 14, admitted_at: "2026-11-04T18:30:00Z", notes: "Cardiac observation suite with companion bed" },
+  { id: 13, ward_id: 3, bed_number: "STE-403", status: "available", current_patient_id: null, admitted_at: null, notes: "VIP luxury suite sterilized" },
+  { id: 14, ward_id: 3, bed_number: "STE-404", status: "available", current_patient_id: null, admitted_at: null, notes: "Sanitized with private garden view" },
+
+  // Ward 4: Pediatric
+  { id: 15, ward_id: 4, bed_number: "PED-101", status: "occupied", current_patient_id: 9, admitted_at: "2026-11-04T11:20:00Z", notes: "Pediatric bronchopneumonia recovery & nebulizer" },
+  { id: 16, ward_id: 4, bed_number: "PED-102", status: "available", current_patient_id: null, admitted_at: null, notes: "Equipped with child-safe protective railing" },
+  { id: 17, ward_id: 4, bed_number: "PED-103", status: "available", current_patient_id: null, admitted_at: null, notes: "Pediatric monitor and infusion pump ready" },
+  { id: 18, ward_id: 4, bed_number: "PED-104", status: "available", current_patient_id: null, admitted_at: null, notes: "Child-friendly sanitized space" },
+
+  // Ward 5: Maternity
+  { id: 19, ward_id: 5, bed_number: "MAT-301", status: "occupied", current_patient_id: 6, admitted_at: "2026-11-05T07:30:00Z", notes: "Antenatal observation suite with fetal cardiotocography" },
+  { id: 20, ward_id: 5, bed_number: "MAT-302", status: "available", current_patient_id: null, admitted_at: null, notes: "Private birthing suite sterilized" },
+  { id: 21, ward_id: 5, bed_number: "MAT-303", status: "available", current_patient_id: null, admitted_at: null, notes: "Equipped with neonatal radiant warmer" },
+  { id: 22, ward_id: 5, bed_number: "MAT-304", status: "available", current_patient_id: null, admitted_at: null, notes: "Sterilized and fresh linens" },
+
+  // Ward 6: Emergency Bay
+  { id: 23, ward_id: 6, bed_number: "ER-01", status: "available", current_patient_id: null, admitted_at: null, notes: "Trauma resuscitation bay 1 equipped" },
+  { id: 24, ward_id: 6, bed_number: "ER-02", status: "available", current_patient_id: null, admitted_at: null, notes: "Defibrillator & emergency drug cart docked" },
+  { id: 25, ward_id: 6, bed_number: "ER-03", status: "available", current_patient_id: null, admitted_at: null, notes: "Rapid triage observation bed" },
+  { id: 26, ward_id: 6, bed_number: "ER-04", status: "available", current_patient_id: null, admitted_at: null, notes: "Dedicated suture & minor procedure bay" }
+];
+
+const defaultPharmacyItems = [
+  {
+    id: 1,
+    name: "Lipitor (Atorvastatin 20mg)",
+    generic_name: "Atorvastatin Calcium",
+    category: "Cardiovascular",
+    dosage_form: "Tablet",
+    strength: "20mg",
+    unit_price: 18.50,
+    stock_quantity: 420,
+    min_stock_level: 50,
+    batch_number: "BAT-ATV-8821",
+    expiry_date: "2027-11-30",
+    supplier: "Pfizer Global Health",
+    status: "in_stock"
+  },
+  {
+    id: 2,
+    name: "Augmentin (Amoxicillin-Clavulanate 625mg)",
+    generic_name: "Amoxicillin / Clavulanic Acid",
+    category: "Antibiotics",
+    dosage_form: "Tablet",
+    strength: "625mg",
+    unit_price: 24.00,
+    stock_quantity: 14,
+    min_stock_level: 40,
+    batch_number: "BAT-AMC-7402",
+    expiry_date: "2026-12-15",
+    supplier: "GlaxoSmithKline",
+    status: "low_stock"
+  },
+  {
+    id: 3,
+    name: "Metformin HCl 500mg ER",
+    generic_name: "Metformin Hydrochloride",
+    category: "Endocrinology",
+    dosage_form: "Tablet",
+    strength: "500mg ER",
+    unit_price: 12.00,
+    stock_quantity: 650,
+    min_stock_level: 60,
+    batch_number: "BAT-MET-3319",
+    expiry_date: "2028-03-31",
+    supplier: "Merck Healthcare",
+    status: "in_stock"
+  },
+  {
+    id: 4,
+    name: "Ventolin HFA Inhaler",
+    generic_name: "Albuterol Sulfate Inhaler",
+    category: "Pulmonology",
+    dosage_form: "Inhaler",
+    strength: "90mcg/actuation",
+    unit_price: 45.00,
+    stock_quantity: 8,
+    min_stock_level: 25,
+    batch_number: "BAT-ALB-9104",
+    expiry_date: "2027-04-15",
+    supplier: "GSK Pharmaceuticals",
+    status: "low_stock"
+  },
+  {
+    id: 5,
+    name: "Ceftriaxone IV 1g",
+    generic_name: "Ceftriaxone Sodium",
+    category: "Injectable Antibiotics",
+    dosage_form: "Vial",
+    strength: "1g IV/IM",
+    unit_price: 32.50,
+    stock_quantity: 180,
+    min_stock_level: 40,
+    batch_number: "BAT-CEF-2201",
+    expiry_date: "2027-08-20",
+    supplier: "Roche Diagnostics & Pharma",
+    status: "in_stock"
+  },
+  {
+    id: 6,
+    name: "Pantoprazole Sodium 40mg",
+    generic_name: "Pantoprazole",
+    category: "Gastroenterology",
+    dosage_form: "Tablet",
+    strength: "40mg",
+    unit_price: 14.20,
+    stock_quantity: 340,
+    min_stock_level: 50,
+    batch_number: "BAT-PAN-6651",
+    expiry_date: "2027-10-15",
+    supplier: "Novartis AG",
+    status: "in_stock"
+  },
+  {
+    id: 7,
+    name: "Dolo 650 (Paracetamol 650mg)",
+    generic_name: "Paracetamol",
+    category: "Analgesic & Antipyretic",
+    dosage_form: "Tablet",
+    strength: "650mg",
+    unit_price: 3.50,
+    stock_quantity: 850,
+    min_stock_level: 100,
+    batch_number: "BAT-DOL-9901",
+    expiry_date: "2028-06-30",
+    supplier: "Micro Labs",
+    status: "in_stock"
+  },
+  {
+    id: 8,
+    name: "Telma 40 (Telmisartan 40mg)",
+    generic_name: "Telmisartan",
+    category: "Cardiovascular",
+    dosage_form: "Tablet",
+    strength: "40mg",
+    unit_price: 16.00,
+    stock_quantity: 380,
+    min_stock_level: 50,
+    batch_number: "BAT-TEL-4412",
+    expiry_date: "2027-09-15",
+    supplier: "Glenmark Pharma",
+    status: "in_stock"
+  },
+  {
+    id: 9,
+    name: "Azithral 500 (Azithromycin 500mg)",
+    generic_name: "Azithromycin",
+    category: "Antibiotics",
+    dosage_form: "Tablet",
+    strength: "500mg",
+    unit_price: 28.50,
+    stock_quantity: 210,
+    min_stock_level: 35,
+    batch_number: "BAT-AZI-3301",
+    expiry_date: "2027-05-20",
+    supplier: "Alembic Pharmaceuticals",
+    status: "in_stock"
+  },
+  {
+    id: 10,
+    name: "Ondansetron 4mg (Emeset)",
+    generic_name: "Ondansetron Hydrochloride",
+    category: "Gastroenterology",
+    dosage_form: "Injection / Vial",
+    strength: "2ml (2mg/ml)",
+    unit_price: 15.00,
+    stock_quantity: 95,
+    min_stock_level: 20,
+    batch_number: "BAT-OND-7712",
+    expiry_date: "2027-07-31",
+    supplier: "Cipla Healthcare",
+    status: "in_stock"
+  },
+  {
+    id: 11,
+    name: "Human Regular Insulin (Actrapid)",
+    generic_name: "Insulin (rDNA origin)",
+    category: "Endocrinology",
+    dosage_form: "Vial",
+    strength: "100 IU/ml (10ml)",
+    unit_price: 180.00,
+    stock_quantity: 9,
+    min_stock_level: 20,
+    batch_number: "BAT-INS-1109",
+    expiry_date: "2027-02-28",
+    supplier: "Novo Nordisk",
+    status: "low_stock"
+  },
+  {
+    id: 12,
+    name: "Clopidogrel 75mg (Plavix)",
+    generic_name: "Clopidogrel Bisulfate",
+    category: "Cardiovascular",
+    dosage_form: "Tablet",
+    strength: "75mg",
+    unit_price: 22.00,
+    stock_quantity: 260,
+    min_stock_level: 40,
+    batch_number: "BAT-CLO-5501",
+    expiry_date: "2027-12-10",
+    supplier: "Sanofi India",
+    status: "in_stock"
+  },
+  {
+    id: 13,
+    name: "Tramadol HCl 50mg",
+    generic_name: "Tramadol Hydrochloride",
+    category: "Analgesic",
+    dosage_form: "Capsule",
+    strength: "50mg",
+    unit_price: 18.00,
+    stock_quantity: 140,
+    min_stock_level: 30,
+    batch_number: "BAT-TRA-8812",
+    expiry_date: "2027-10-30",
+    supplier: "Abbott Healthcare",
+    status: "in_stock"
+  },
+  {
+    id: 14,
+    name: "Normal Saline (0.9% NaCl IV)",
+    generic_name: "Sodium Chloride IV Infusion",
+    category: "IV Fluids & Electrolytes",
+    dosage_form: "Bottle",
+    strength: "500ml",
+    unit_price: 45.00,
+    stock_quantity: 420,
+    min_stock_level: 60,
+    batch_number: "BAT-NS-0921",
+    expiry_date: "2028-11-30",
+    supplier: "Baxter Healthcare",
+    status: "in_stock"
+  },
+  {
+    id: 15,
+    name: "Ringers Lactate (RL Infusion)",
+    generic_name: "Compound Sodium Lactate",
+    category: "IV Fluids & Electrolytes",
+    dosage_form: "Bottle",
+    strength: "500ml",
+    unit_price: 52.00,
+    stock_quantity: 310,
+    min_stock_level: 50,
+    batch_number: "BAT-RL-3312",
+    expiry_date: "2028-09-15",
+    supplier: "Fresenius Kabi",
+    status: "in_stock"
+  },
+  {
+    id: 16,
+    name: "Adrenaline 1:1000 Injection",
+    generic_name: "Epinephrine",
+    category: "Emergency & Resuscitation",
+    dosage_form: "Ampoule",
+    strength: "1mg/ml (1ml)",
+    unit_price: 35.00,
+    stock_quantity: 75,
+    min_stock_level: 25,
+    batch_number: "BAT-ADR-1002",
+    expiry_date: "2027-03-31",
+    supplier: "Neon Laboratories",
+    status: "in_stock"
+  },
+  {
+    id: 17,
+    name: "Thyronorm 50mcg",
+    generic_name: "Levothyroxine Sodium",
+    category: "Endocrinology",
+    dosage_form: "Tablet",
+    strength: "50mcg",
+    unit_price: 11.50,
+    stock_quantity: 500,
+    min_stock_level: 50,
+    batch_number: "BAT-THY-2291",
+    expiry_date: "2028-04-30",
+    supplier: "Abbott India",
+    status: "in_stock"
+  },
+  {
+    id: 18,
+    name: "Budecort 0.5mg Respules",
+    generic_name: "Budesonide Inhalation Suspension",
+    category: "Pulmonology",
+    dosage_form: "Respule",
+    strength: "0.5mg/2ml",
+    unit_price: 25.00,
+    stock_quantity: 190,
+    min_stock_level: 30,
+    batch_number: "BAT-BUD-6601",
+    expiry_date: "2027-08-15",
+    supplier: "Cipla Respiratory",
+    status: "in_stock"
+  }
+];
+
+const defaultAppointments = [
+  // Today's appointments (2026-11-05)
+  {
+    id: 1,
+    appointment_number: "APT-2026-9101",
+    patient_id: 5,
+    doctor_id: 1,
+    department_id: 1,
+    appointment_date: "2026-11-05",
+    appointment_time: "09:30 AM",
+    type: "Specialist Review",
+    reason: "Coronary evaluation and exertional angina assessment with ECG review.",
+    status: "confirmed",
+    notes: "Patient is admitted in ICU-102. Triage vitals recorded.",
+    created_at: "2026-11-04T10:15:00Z"
+  },
+  {
+    id: 2,
+    appointment_number: "APT-2026-9102",
+    patient_id: 12,
+    doctor_id: 9,
+    department_id: 1,
+    appointment_date: "2026-11-05",
+    appointment_time: "11:00 AM",
+    type: "Routine Checkup",
+    reason: "Thyroid disorder titration, persistent fatigue, and metabolic assessment.",
+    status: "confirmed",
+    notes: "Recent thyroid profile reports available on portal.",
+    created_at: "2026-11-04T14:30:00Z"
+  },
+  {
+    id: 3,
+    appointment_number: "APT-2026-9103",
+    patient_id: 10,
+    doctor_id: 2,
+    department_id: 2,
+    appointment_date: "2026-11-05",
+    appointment_time: "02:30 PM",
+    type: "Consultation",
+    reason: "Severe migraine with visual aura refractory to initial analgesics.",
+    status: "pending",
+    notes: "Patient requested urgent slot; front desk verified intake.",
+    created_at: "2026-11-05T08:20:00Z"
+  },
+  {
+    id: 4,
+    appointment_number: "APT-2026-9104",
+    patient_id: 13,
+    doctor_id: 3,
+    department_id: 3,
+    appointment_date: "2026-11-05",
+    appointment_time: "04:00 PM",
+    type: "Follow-up",
+    reason: "Knee sports ligament assessment, MRI review, and rehabilitation plan.",
+    status: "confirmed",
+    notes: "Knee brace fitted, imaging uploaded to PACS.",
+    created_at: "2026-11-03T16:00:00Z"
+  },
+
+  // Upcoming appointments (2026-11-06 to 2026-11-08)
+  {
+    id: 5,
+    appointment_number: "APT-2026-9105",
+    patient_id: 7,
+    doctor_id: 9,
+    department_id: 1,
+    appointment_date: "2026-11-06",
+    appointment_time: "10:30 AM",
+    type: "Consultation",
+    reason: "Type 2 Diabetes Mellitus glycemic titration and HbA1c review.",
+    status: "confirmed",
+    notes: "Fasting lipid panel to be drawn before appointment.",
+    created_at: "2026-11-04T11:00:00Z"
+  },
+  {
+    id: 6,
+    appointment_number: "APT-2026-9106",
+    patient_id: 6,
+    doctor_id: 6,
+    department_id: 8,
+    appointment_date: "2026-11-06",
+    appointment_time: "02:00 PM",
+    type: "Antenatal Checkup",
+    reason: "28-week antenatal ultrasound and fetal growth velocity assessment.",
+    status: "confirmed",
+    notes: "Fetal cardiotocography scheduled in Suite 330.",
+    created_at: "2026-11-02T09:10:00Z"
+  },
+  {
+    id: 7,
+    appointment_number: "APT-2026-9107",
+    patient_id: 4,
+    doctor_id: 4,
+    department_id: 4,
+    appointment_date: "2026-11-07",
+    appointment_time: "09:00 AM",
+    type: "Follow-up",
+    reason: "Pediatric asthma checkup and peak flow measurement.",
+    status: "confirmed",
+    notes: "Review inhaler spacer technique with parent.",
+    created_at: "2026-11-04T12:00:00Z"
+  },
+  {
+    id: 8,
+    appointment_number: "APT-2026-9108",
+    patient_id: 15,
+    doctor_id: 8,
+    department_id: 7,
+    appointment_date: "2026-11-07",
+    appointment_time: "11:30 AM",
+    type: "Follow-up",
+    reason: "Recovery checkup post viral gastroenteritis dehydration.",
+    status: "confirmed",
+    notes: "Check electrolytes and oral rehydration compliance.",
+    created_at: "2026-11-04T15:45:00Z"
+  },
+  {
+    id: 9,
+    appointment_number: "APT-2026-9109",
+    patient_id: 1,
+    doctor_id: 1,
+    department_id: 1,
+    appointment_date: "2026-11-08",
+    appointment_time: "10:00 AM",
+    type: "Routine Checkup",
+    reason: "Routine cardiovascular wellness and blood pressure titration.",
+    status: "pending",
+    notes: "Awaiting patient confirmation via SMS.",
+    created_at: "2026-11-05T09:00:00Z"
+  },
+
+  // Past completed appointments
+  {
+    id: 10,
+    appointment_number: "APT-2026-9041",
+    patient_id: 1,
+    doctor_id: 1,
+    department_id: 1,
+    appointment_date: "2026-10-30",
+    appointment_time: "10:00 AM",
+    type: "Routine Checkup",
+    reason: "Semi-annual lipid panel evaluation and blood pressure check.",
+    status: "completed",
+    notes: "Lipid panel reviewed. Prescribed Atorvastatin & Losartan.",
+    created_at: "2026-10-28T09:15:00Z"
+  },
+  {
+    id: 11,
+    appointment_number: "APT-2026-9042",
+    patient_id: 2,
+    doctor_id: 3,
+    department_id: 3,
+    appointment_date: "2026-10-31",
+    appointment_time: "11:30 AM",
+    type: "Follow-up",
+    reason: "Post-operative orthopedic mobility check and wound dressing.",
+    status: "completed",
+    notes: "Suture line intact, no signs of infection. Physiotherapy initiated.",
+    created_at: "2026-10-27T16:00:00Z"
+  },
+  {
+    id: 12,
+    appointment_number: "APT-2026-9043",
+    patient_id: 8,
+    doctor_id: 3,
+    department_id: 3,
+    appointment_date: "2026-11-02",
+    appointment_time: "01:30 PM",
+    type: "Specialist Review",
+    reason: "Pre-arthroplasty joint mobility and robotic surgical mapping.",
+    status: "completed",
+    notes: "Pre-anesthesia clearance completed; admitted to Suite 401.",
+    created_at: "2026-10-29T11:20:00Z"
+  },
+  {
+    id: 13,
+    appointment_number: "APT-2026-9044",
+    patient_id: 3,
+    doctor_id: 2,
+    department_id: 2,
+    appointment_date: "2026-11-03",
+    appointment_time: "02:30 PM",
+    type: "Emergency Consult",
+    reason: "Acute focal neurological deficit and cranial pressure monitoring.",
+    status: "completed",
+    notes: "Brain MRI acquired. Telemetry transferred to ICU-101.",
+    created_at: "2026-11-03T07:45:00Z"
+  },
+  {
+    id: 14,
+    appointment_number: "APT-2026-9045",
+    patient_id: 9,
+    doctor_id: 4,
+    department_id: 4,
+    appointment_date: "2026-11-03",
+    appointment_time: "10:30 AM",
+    type: "Pediatric Triage",
+    reason: "Persistent wheezing and high-grade febrile episode.",
+    status: "completed",
+    notes: "Admitted to Pediatric Sunshine Wing Bed PED-101.",
+    created_at: "2026-11-03T09:00:00Z"
+  }
+];
+
+const defaultLabTests = [
+  {
+    id: 1,
+    test_code: "LAB-2026-101",
+    patient_id: 1,
+    doctor_id: 1,
+    test_name: "Complete Blood Count (CBC) with Differential",
+    category: "Hematology",
+    ordered_date: "2026-10-30",
+    sample_type: "Venous Blood",
+    status: "completed",
+    results: "WBC: 6.8 K/uL (Normal), RBC: 4.92 M/uL (Normal), Hemoglobin: 15.1 g/dL (Normal), Platelets: 245 K/uL (Normal).",
+    normal_range: "WBC: 4.5-11.0, Hb: 13.8-17.2",
+    unit: "Standard Clinical",
+    is_abnormal: 0,
+    authorized_by: "Dr. Eleanor Hayes, MD",
+    notes: "All parameters within optimal physiological baseline limits."
+  },
+  {
+    id: 2,
+    test_code: "LAB-2026-102",
+    patient_id: 1,
+    doctor_id: 1,
+    test_name: "Comprehensive Lipid Profile",
+    category: "Clinical Biochemistry",
+    ordered_date: "2026-10-30",
+    sample_type: "Serum Fasting",
+    status: "completed",
+    results: "Total Cholesterol: 188 mg/dL, HDL: 52 mg/dL, LDL: 110 mg/dL, Triglycerides: 130 mg/dL.",
+    normal_range: "Total < 200, LDL < 100",
+    unit: "mg/dL",
+    is_abnormal: 0,
+    authorized_by: "Dr. Eleanor Hayes, MD",
+    notes: "Borderline LDL. Continue low-saturated fat Mediterranean diet."
+  },
+  {
+    id: 3,
+    test_code: "LAB-2026-103",
+    patient_id: 2,
+    doctor_id: 3,
+    test_name: "Right Knee Digital Radiograph (3-View AP/Lat)",
+    category: "Radiology",
+    ordered_date: "2026-10-31",
+    sample_type: "Imaging",
+    status: "completed",
+    results: "Orthopedic prosthesis intact. Suture alignment anatomically intact with no joint effusion or periprosthetic lucency.",
+    normal_range: "No hardware loosening",
+    unit: "Visual Radiology",
+    is_abnormal: 0,
+    authorized_by: "Dr. Claire Dupont, MD",
+    notes: "Bone remodeling progressing excellently."
+  },
+  {
+    id: 4,
+    test_code: "LAB-2026-104",
+    patient_id: 3,
+    doctor_id: 2,
+    test_name: "Brain Magnetic Resonance Imaging (MRI 3T)",
+    category: "Neuroradiology",
+    ordered_date: "2026-11-03",
+    sample_type: "Imaging",
+    status: "completed",
+    results: "No acute ischemic territorial infarct. Mild age-related cerebral microangiopathy; ventricles stable.",
+    normal_range: "Non-ischemic",
+    unit: "Tesla 3.0",
+    is_abnormal: 0,
+    authorized_by: "Dr. Julian Sterling, MD",
+    notes: "Reviewed and cleared for telemetry stepdown."
+  },
+  {
+    id: 5,
+    test_code: "LAB-2026-105",
+    patient_id: 5,
+    doctor_id: 1,
+    test_name: "Cardiac Troponin-I High Sensitivity (hs-cTnI)",
+    category: "Cardiac Biomarkers",
+    ordered_date: "2026-11-04",
+    sample_type: "Venous Blood",
+    status: "completed",
+    results: "Troponin-I: 0.012 ng/mL (Normal Baseline). Negative for acute myocardial necrosis.",
+    normal_range: "< 0.04 ng/mL",
+    unit: "ng/mL",
+    is_abnormal: 0,
+    authorized_by: "Dr. Eleanor Hayes, MD",
+    notes: "Serial 6-hour repeat confirmed stable baseline."
+  },
+  {
+    id: 6,
+    test_code: "LAB-2026-106",
+    patient_id: 7,
+    doctor_id: 9,
+    test_name: "Glycated Hemoglobin (HbA1c) & Fasting Plasma Glucose",
+    category: "Clinical Biochemistry",
+    ordered_date: "2026-11-04",
+    sample_type: "Whole Blood EDTA",
+    status: "completed",
+    results: "HbA1c: 7.2% (Fair Control), Fasting Plasma Glucose: 138 mg/dL.",
+    normal_range: "HbA1c < 5.7% Normal, 5.7-6.4% Prediabetes",
+    unit: "% & mg/dL",
+    is_abnormal: 1,
+    authorized_by: "Dr. Sameer Kulkarni, MD",
+    notes: "Mildly elevated. Recommend Metformin titration and dietary consult."
+  },
+  {
+    id: 7,
+    test_code: "LAB-2026-107",
+    patient_id: 12,
+    doctor_id: 9,
+    test_name: "Thyroid Function Panel (FT3, FT4, Ultrasensitive TSH)",
+    category: "Endocrinology",
+    ordered_date: "2026-11-04",
+    sample_type: "Serum",
+    status: "completed",
+    results: "Free T3: 3.1 pg/mL, Free T4: 1.25 ng/dL, TSH: 4.85 uIU/mL (Subclinical Hypothyroidism).",
+    normal_range: "TSH: 0.45 - 4.50 uIU/mL",
+    unit: "uIU/mL",
+    is_abnormal: 1,
+    authorized_by: "Dr. Sameer Kulkarni, MD",
+    notes: "Slightly elevated TSH; Thyronorm dosage adjusted to 50mcg."
+  },
+  {
+    id: 8,
+    test_code: "LAB-2026-108",
+    patient_id: 11,
+    doctor_id: 8,
+    test_name: "Liver Function Test (LFT) & Coagulation Profile (PT/INR)",
+    category: "Clinical Biochemistry",
+    ordered_date: "2026-11-04",
+    sample_type: "Citrated & Heparinized Blood",
+    status: "completed",
+    results: "Total Bilirubin: 0.9 mg/dL, SGOT/AST: 28 U/L, SGPT/ALT: 32 U/L, Alkaline Phosphatase: 88 U/L, INR: 1.05.",
+    normal_range: "Bilirubin: 0.2-1.2, INR: 0.9-1.1",
+    unit: "U/L & Ratio",
+    is_abnormal: 0,
+    authorized_by: "Dr. Ethan Wright, MD",
+    notes: "Optimal hepatic baseline post cholecystectomy."
+  },
+  {
+    id: 9,
+    test_code: "LAB-2026-109",
+    patient_id: 9,
+    doctor_id: 4,
+    test_name: "Pediatric Digital Chest Radiograph (Chest X-Ray PA)",
+    category: "Radiology",
+    ordered_date: "2026-11-04",
+    sample_type: "Imaging",
+    status: "completed",
+    results: "Resolving patchy broncho-vascular infiltration in right mid-zone. No pleural effusion or pneumothorax.",
+    normal_range: "Clear lung fields",
+    unit: "Visual Radiology",
+    is_abnormal: 1,
+    authorized_by: "Dr. Claire Dupont, MD",
+    notes: "Marked clinical improvement compared to admission film."
+  },
+  {
+    id: 10,
+    test_code: "LAB-2026-110",
+    patient_id: 6,
+    doctor_id: 6,
+    test_name: "Obstetric 4D Color Doppler & Fetal Biometry (28 Weeks)",
+    category: "Ultrasonography",
+    ordered_date: "2026-11-05",
+    sample_type: "Diagnostic Ultrasound",
+    status: "processing",
+    results: "Scan in progress in Birthing Suite ultrasound suite. Preliminary biometry parameters adequate.",
+    normal_range: "Normal gestational growth",
+    unit: "Ultrasound Biometry",
+    is_abnormal: 0,
+    authorized_by: null,
+    notes: "Dr. Samantha Reynolds performing bedside scan."
+  },
+  {
+    id: 11,
+    test_code: "LAB-2026-111",
+    patient_id: 13,
+    doctor_id: 3,
+    test_name: "High-Resolution Knee MRI (3.0 Tesla)",
+    category: "Orthopedic Imaging",
+    ordered_date: "2026-11-05",
+    sample_type: "Imaging",
+    status: "processing",
+    results: "Images captured; 3D coronal and sagittal reconstruction undergoing radiologist review.",
+    normal_range: "Intact cruciate ligaments",
+    unit: "Tesla 3.0",
+    is_abnormal: 0,
+    authorized_by: null,
+    notes: "Priority orthopedic reporting requested."
+  },
+  {
+    id: 12,
+    test_code: "LAB-2026-112",
+    patient_id: 14,
+    doctor_id: 1,
+    test_name: "Kidney Function Test (Serum Creatinine, BUN, Electrolytes)",
+    category: "Clinical Biochemistry",
+    ordered_date: "2026-11-05",
+    sample_type: "Venous Blood",
+    status: "sample_collected",
+    results: "Sample barcoded and transferred to central automated biochemistry analyzer.",
+    normal_range: "Creatinine: 0.6-1.2 mg/dL",
+    unit: "mg/dL",
+    is_abnormal: 0,
+    authorized_by: null,
+    notes: "Routine pre-discharge electrolyte assessment."
+  }
+];
+
+const defaultInvoices = [
+  {
+    id: 1,
+    invoice_number: "INV-2026-0881",
+    patient_id: 1,
+    appointment_id: 10,
+    subtotal: 1200.00,
+    tax_rate: 5.00,
+    tax_amount: 60.00,
+    discount_amount: 0.00,
+    total_amount: 1260.00,
+    status: "paid",
+    payment_method: "Credit Card (Visa)",
+    transaction_ref: "TXN-VISA-994102",
+    due_date: "2026-10-30",
+    paid_at: "2026-10-30T11:45:00Z",
+    notes: "Specialist consultation and 12-lead ECG interpretation paid in full.",
+    items: [
+      { id: 1, description: "Senior Cardiologist Consultation (Dr. Hayes)", category: "Consultation", quantity: 1, unit_price: 1200.00, total: 1200.00 }
+    ]
+  },
+  {
+    id: 2,
+    invoice_number: "INV-2026-0882",
+    patient_id: 2,
+    appointment_id: 11,
+    subtotal: 4500.00,
+    tax_rate: 5.00,
+    tax_amount: 225.00,
+    discount_amount: 250.00,
+    total_amount: 4475.00,
+    status: "paid",
+    payment_method: "UPI (Google Pay)",
+    transaction_ref: "TXN-UPI-481920",
+    due_date: "2026-11-01",
+    paid_at: "2026-11-01T15:20:00Z",
+    notes: "Post-op knee arthroscopy follow-up, digital X-Ray & wound care.",
+    items: [
+      { id: 2, description: "Orthopedic Surgical Specialist Follow-up", category: "Consultation", quantity: 1, unit_price: 1100.00, total: 1100.00 },
+      { id: 3, description: "Right Knee Digital Radiograph (3-View)", category: "Radiology", quantity: 1, unit_price: 1800.00, total: 1800.00 },
+      { id: 4, description: "Post-op Wound Dressing & Sterile Supplies", category: "Nursing", quantity: 1, unit_price: 1600.00, total: 1600.00 }
+    ]
+  },
+  {
+    id: 3,
+    invoice_number: "INV-2026-0883",
+    patient_id: 3,
+    appointment_id: null,
+    subtotal: 19500.00,
+    tax_rate: 5.00,
+    tax_amount: 975.00,
+    discount_amount: 1000.00,
+    total_amount: 19475.00,
+    status: "paid",
+    payment_method: "Direct NetBanking (HDFC)",
+    transaction_ref: "TXN-HDFC-889102",
+    due_date: "2026-11-04",
+    paid_at: "2026-11-04T17:10:00Z",
+    notes: "ICCU Stay 2 nights (Bed ICU-101), Brain MRI 3T, and telemetry oversight.",
+    items: [
+      { id: 5, description: "Intensive Cardiac Care Unit (2 Nights @ ₹6,500)", category: "Room & Board", quantity: 2, unit_price: 6500.00, total: 13000.00 },
+      { id: 6, description: "High Resolution 3T Brain MRI Scan", category: "Radiology", quantity: 1, unit_price: 6500.00, total: 6500.00 }
+    ]
+  },
+  {
+    id: 4,
+    invoice_number: "INV-2026-0884",
+    patient_id: 5,
+    appointment_id: 1,
+    subtotal: 8200.00,
+    tax_rate: 5.00,
+    tax_amount: 410.00,
+    discount_amount: 0.00,
+    total_amount: 8610.00,
+    status: "paid",
+    payment_method: "Corporate TPA Card (Star Health)",
+    transaction_ref: "TXN-STAR-330198",
+    due_date: "2026-11-05",
+    paid_at: "2026-11-05T10:00:00Z",
+    notes: "ICCU telemetry admission, serial cardiac biomarkers & 2D Echo.",
+    items: [
+      { id: 7, description: "ICCU Bed 1 Night (Bed ICU-102)", category: "Room & Board", quantity: 1, unit_price: 6500.00, total: 6500.00 },
+      { id: 8, description: "High Sensitivity Troponin-I Test", category: "Diagnostics", quantity: 1, unit_price: 1700.00, total: 1700.00 }
+    ]
+  },
+  {
+    id: 5,
+    invoice_number: "INV-2026-0885",
+    patient_id: 8,
+    appointment_id: 12,
+    subtotal: 48000.00,
+    tax_rate: 5.00,
+    tax_amount: 2400.00,
+    discount_amount: 2000.00,
+    total_amount: 48400.00,
+    status: "unpaid",
+    payment_method: null,
+    transaction_ref: null,
+    due_date: "2026-11-08",
+    paid_at: null,
+    notes: "Emerald Executive Suite 3 Nights, Pre-op robotic arthroplasty workup.",
+    items: [
+      { id: 9, description: "Emerald Executive Suite (3 Nights @ ₹5,500)", category: "Room & Board", quantity: 3, unit_price: 5500.00, total: 16500.00 },
+      { id: 10, description: "MAKO Robotic Orthopedic Surgical Package", category: "Surgery", quantity: 1, unit_price: 28000.00, total: 28000.00 },
+      { id: 11, description: "Specialized Joint Rehabilitation & PT", category: "Therapy", quantity: 1, unit_price: 3500.00, total: 3500.00 }
+    ]
+  },
+  {
+    id: 6,
+    invoice_number: "INV-2026-0886",
+    patient_id: 9,
+    appointment_id: 14,
+    subtotal: 5800.00,
+    tax_rate: 5.00,
+    tax_amount: 290.00,
+    discount_amount: 300.00,
+    total_amount: 5790.00,
+    status: "paid",
+    payment_method: "UPI (PhonePe)",
+    transaction_ref: "TXN-PHONEPE-99014",
+    due_date: "2026-11-04",
+    paid_at: "2026-11-04T18:00:00Z",
+    notes: "Pediatric Sunshine Wing (1 Night), nebulizer charges, Chest X-Ray.",
+    items: [
+      { id: 12, description: "Pediatric Sunshine Wing (Bed PED-101)", category: "Room & Board", quantity: 1, unit_price: 2200.00, total: 2200.00 },
+      { id: 13, description: "Pediatric Critical Care Consultation", category: "Consultation", quantity: 1, unit_price: 900.00, total: 900.00 },
+      { id: 14, description: "Digital Chest X-Ray PA View", category: "Radiology", quantity: 1, unit_price: 1500.00, total: 1500.00 },
+      { id: 15, description: "Nebulization Supplies & Medications", category: "Pharmacy", quantity: 1, unit_price: 1200.00, total: 1200.00 }
+    ]
+  },
+  {
+    id: 7,
+    invoice_number: "INV-2026-0887",
+    patient_id: 11,
+    appointment_id: null,
+    subtotal: 22500.00,
+    tax_rate: 5.00,
+    tax_amount: 1125.00,
+    discount_amount: 1500.00,
+    total_amount: 22125.00,
+    status: "unpaid",
+    payment_method: null,
+    transaction_ref: null,
+    due_date: "2026-11-06",
+    paid_at: null,
+    notes: "Laparoscopic cholecystectomy surgical charges & general recovery bed.",
+    items: [
+      { id: 16, description: "Laparoscopic Cholecystectomy Surgical Theatre", category: "Surgery", quantity: 1, unit_price: 18000.00, total: 18000.00 },
+      { id: 17, description: "Surgical Recovery Ward (2 Nights @ ₹1,500)", category: "Room & Board", quantity: 2, unit_price: 1500.00, total: 3000.00 },
+      { id: 18, description: "Liver Function & Coagulation Profiling", category: "Diagnostics", quantity: 1, unit_price: 1500.00, total: 1500.00 }
+    ]
+  },
+  {
+    id: 8,
+    invoice_number: "INV-2026-0888",
+    patient_id: 12,
+    appointment_id: 2,
+    subtotal: 2150.00,
+    tax_rate: 5.00,
+    tax_amount: 107.50,
+    discount_amount: 0.00,
+    total_amount: 2257.50,
+    status: "paid",
+    payment_method: "Debit Card (SBI)",
+    transaction_ref: "TXN-SBI-114920",
+    due_date: "2026-11-05",
+    paid_at: "2026-11-05T11:40:00Z",
+    notes: "Gastroenterologist consultation & ultrasensitive thyroid panel.",
+    items: [
+      { id: 19, description: "Consultant Gastroenterologist Consultation", category: "Consultation", quantity: 1, unit_price: 1250.00, total: 1250.00 },
+      { id: 20, description: "Ultrasensitive Thyroid Panel (T3, T4, TSH)", category: "Diagnostics", quantity: 1, unit_price: 900.00, total: 900.00 }
+    ]
+  }
+];
+
+const defaultPrescriptions = [
+  {
+    id: 1,
+    prescription_code: "RX-2026-4401",
+    appointment_id: 10,
+    patient_id: 1,
+    doctor_id: 1,
+    diagnosis: "Primary Hypercholesterolemia & Essential Hypertension Stage 1",
+    instructions: "Take medications daily with meals. Monitor resting pulse and avoid abrupt cessation.",
+    prescribed_date: "2026-10-30",
+    status: "active",
+    items: [
+      { id: 1, medicine_name: "Lipitor (Atorvastatin 20mg)", dosage: "1 Tablet", frequency: "Once daily at bedtime", duration: "90 Days", instructions: "Avoid grapefruit juice." },
+      { id: 2, medicine_name: "Telma 40 (Telmisartan 40mg)", dosage: "1 Tablet", frequency: "Once daily in morning", duration: "90 Days", instructions: "Maintain adequate hydration." }
+    ]
+  },
+  {
+    id: 2,
+    prescription_code: "RX-2026-4402",
+    appointment_id: 11,
+    patient_id: 2,
+    doctor_id: 3,
+    diagnosis: "Right Knee Post-Arthroscopy Synovitis & Pain Management",
+    instructions: "Apply cold pack for 15 minutes twice daily. Keep limb elevated.",
+    prescribed_date: "2026-10-31",
+    status: "active",
+    items: [
+      { id: 3, medicine_name: "Dolo 650 (Paracetamol 650mg)", dosage: "1 Tablet", frequency: "Thrice daily as needed", duration: "7 Days", instructions: "Take after meals." },
+      { id: 4, medicine_name: "Pantoprazole Sodium 40mg", dosage: "1 Tablet", frequency: "Once daily before breakfast", duration: "14 Days", instructions: "Empty stomach." },
+      { id: 5, medicine_name: "Augmentin 625mg", dosage: "1 Tablet", frequency: "Twice daily", duration: "5 Days", instructions: "Complete full antibiotic course." }
+    ]
+  },
+  {
+    id: 3,
+    prescription_code: "RX-2026-4403",
+    appointment_id: 1,
+    patient_id: 5,
+    doctor_id: 1,
+    diagnosis: "Exertional Angina Pectoris & Coronary Arteriosclerosis",
+    instructions: "Restrict sodium intake to < 2g/day. Keep emergency Sorbitrate tablet accessible.",
+    prescribed_date: "2026-11-05",
+    status: "active",
+    items: [
+      { id: 6, medicine_name: "Clopidogrel 75mg (Plavix)", dosage: "1 Tablet", frequency: "Once daily after lunch", duration: "180 Days", instructions: "Do not miss doses." },
+      { id: 7, medicine_name: "Atorvastatin 40mg", dosage: "1 Tablet", frequency: "Once daily at night", duration: "180 Days", instructions: "Check LFT after 6 weeks." }
+    ]
+  },
+  {
+    id: 4,
+    prescription_code: "RX-2026-4404",
+    appointment_id: 2,
+    patient_id: 12,
+    doctor_id: 9,
+    diagnosis: "Subclinical Hypothyroidism with Metabolic Dyslipidemia",
+    instructions: "Take thyroid hormone early morning with plain water at least 45 minutes before tea or breakfast.",
+    prescribed_date: "2026-11-05",
+    status: "active",
+    items: [
+      { id: 8, medicine_name: "Thyronorm 50mcg", dosage: "1 Tablet", frequency: "Once daily early morning", duration: "90 Days", instructions: "Strict empty stomach." },
+      { id: 9, medicine_name: "Vitamin D3 60,000 IU", dosage: "1 Capsule", frequency: "Once weekly with milk", duration: "8 Weeks", instructions: "After dinner." }
+    ]
+  },
+  {
+    id: 5,
+    prescription_code: "RX-2026-4405",
+    appointment_id: 14,
+    patient_id: 9,
+    doctor_id: 4,
+    diagnosis: "Pediatric Acute Bronchial Wheezing & Reactive Airway",
+    instructions: "Administer nebulization twice daily using mask. Clean chamber after each use.",
+    prescribed_date: "2026-11-03",
+    status: "active",
+    items: [
+      { id: 10, medicine_name: "Budecort 0.5mg Respules", dosage: "1 Respule", frequency: "Twice daily via nebulizer", duration: "5 Days", instructions: "Rinse mouth post inhalation." },
+      { id: 11, medicine_name: "Levolin Syrups 5ml", dosage: "5ml", frequency: "Thrice daily", duration: "5 Days", instructions: "Use measuring cup." }
+    ]
+  }
+];
+
+const defaultStaff = [
+  {
+    id: 1,
+    name: "Sarah Jenkins, RN",
+    role_title: "Head Nurse - ICU & Critical Care",
+    department: "Intensive Care Unit (ICU)",
+    email: "staff@hospital.com",
+    phone: "+1 (555) 019-3342",
+    shift: "Morning (07:00 AM - 03:00 PM)",
+    status: "On Duty",
+    joined_date: "2023-03-15",
+    qualification: "BSc Nursing, Critical Care Specialist (CCRN)",
+    avatar: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 2,
+    name: "James Cooper",
+    role_title: "Senior Patient Registration & Triage Executive",
+    department: "Outpatient Front Desk",
+    email: "j.cooper@hospital.com",
+    phone: "+1 (555) 019-4511",
+    shift: "Morning (08:00 AM - 04:00 PM)",
+    status: "On Duty",
+    joined_date: "2024-01-10",
+    qualification: "Diploma in Hospital Administration",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 3,
+    name: "Priya Sharma",
+    role_title: "Lead Pharmacist & Inventory Incharge",
+    department: "Hospital Pharmacy",
+    email: "p.sharma@hospital.com",
+    phone: "+1 (555) 019-6723",
+    shift: "General (09:00 AM - 05:00 PM)",
+    status: "On Duty",
+    joined_date: "2023-08-20",
+    qualification: "M.Pharm, Registered Clinical Pharmacist",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 4,
+    name: "Michael Chang",
+    role_title: "Chief Laboratory Technologist",
+    department: "Pathology & Diagnostic Labs",
+    email: "m.chang@hospital.com",
+    phone: "+1 (555) 019-8902",
+    shift: "Evening (02:00 PM - 10:00 PM)",
+    status: "Scheduled",
+    joined_date: "2022-11-05",
+    qualification: "MSc Medical Laboratory Technology (MLT)",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 5,
+    name: "Anita Desai, RN",
+    role_title: "Inpatient Ward Senior Staff Nurse",
+    department: "Surgical Recovery Ward",
+    email: "a.desai@hospital.com",
+    phone: "+1 (555) 019-2287",
+    shift: "Night (10:00 PM - 07:00 AM)",
+    status: "Off Duty",
+    joined_date: "2024-02-01",
+    qualification: "GNM, Post-Basic BSc Nursing",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 6,
+    name: "Rohit Verma",
+    role_title: "Senior Operation Theatre Technologist",
+    department: "Modular Surgical Theatres",
+    email: "rohit.verma@hospital.com",
+    phone: "+91 98330 11982",
+    shift: "Morning (07:30 AM - 03:30 PM)",
+    status: "On Duty",
+    joined_date: "2023-05-18",
+    qualification: "BSc Operation Theatre & Anesthesia Tech",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 7,
+    name: "Deepika Rao, RN",
+    role_title: "Maternity & Labor Room Senior Nurse",
+    department: "Maternity & Birthing Wing",
+    email: "deepika.rao@hospital.com",
+    phone: "+91 98451 22890",
+    shift: "Morning (07:00 AM - 03:00 PM)",
+    status: "On Duty",
+    joined_date: "2023-09-01",
+    qualification: "BSc Nursing, Certified Neonatal Resuscitation",
+    avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: 8,
+    name: "Vikas Shinde",
+    role_title: "Emergency Medical Technician (EMT)",
+    department: "Level-1 Trauma & Ambulance Services",
+    email: "vikas.shinde@hospital.com",
+    phone: "+91 97660 33419",
+    shift: "Rotational (24/7 Trauma)",
+    status: "On Duty",
+    joined_date: "2024-03-12",
+    qualification: "Advanced EMT Certification, ACLS Provider",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80"
+  }
+];
+
+const defaultAttendance = [
+  { id: 1, staff_id: 1, staff_name: "Sarah Jenkins, RN", date: "2026-11-05", punch_in: "06:55 AM", punch_out: null, status: "Present", shift: "Morning", department: "Intensive Care Unit (ICU)" },
+  { id: 2, staff_id: 2, staff_name: "James Cooper", date: "2026-11-05", punch_in: "07:50 AM", punch_out: null, status: "Present", shift: "Morning", department: "Outpatient Front Desk" },
+  { id: 3, staff_id: 3, staff_name: "Priya Sharma", date: "2026-11-05", punch_in: "08:52 AM", punch_out: null, status: "Present", shift: "General", department: "Hospital Pharmacy" },
+  { id: 4, staff_id: 6, staff_name: "Rohit Verma", date: "2026-11-05", punch_in: "07:25 AM", punch_out: null, status: "Present", shift: "Morning", department: "Modular Surgical Theatres" },
+  { id: 5, staff_id: 7, staff_name: "Deepika Rao, RN", date: "2026-11-05", punch_in: "06:50 AM", punch_out: null, status: "Present", shift: "Morning", department: "Maternity & Birthing Wing" },
+  { id: 6, staff_id: 8, staff_name: "Vikas Shinde", date: "2026-11-05", punch_in: "07:00 AM", punch_out: null, status: "Present", shift: "Rotational", department: "Level-1 Trauma & Ambulance Services" }
+];
+
+const defaultNotifications = [
+  { id: 1, user_id: 1, title: "Pharmacy Low Stock Alert", message: "Ventolin HFA Inhaler has reached critical threshold (8 left). Replenishment required.", type: "warning", is_read: 0, created_at: "2026-11-05T08:15:00Z" },
+  { id: 2, user_id: 1, title: "ICU Bed Occupancy Notice", message: "Bed ICU-102 assigned to patient Rajesh Sharma. Telemetry monitoring live.", type: "info", is_read: 0, created_at: "2026-11-04T12:15:00Z" },
+  { id: 3, user_id: 2, title: "Urgent Consultation Queue", message: "Patient Ananya Iyer added to your afternoon neurology queue (02:30 PM).", type: "info", is_read: 0, created_at: "2026-11-05T08:20:00Z" },
+  { id: 4, user_id: 4, title: "Certified Lab Report Ready", message: "Your Complete Blood Count & Comprehensive Lipid Profile reports are available.", type: "success", is_read: 0, created_at: "2026-10-30T14:00:00Z" }
+];
+
+const defaultAuditLogs = [
+  {
+    id: 1,
+    user_id: 1,
+    user_name: "Dr. Marcus Vance",
+    role: "admin",
+    action: "SYSTEM_INITIALIZED",
+    entity_type: "System",
+    entity_id: "SYS-INIT",
+    details: "ApexCare Hospital Management Core services & database schema verified.",
+    ip_address: "127.0.0.1",
+    created_at: "2026-11-05T07:00:00Z"
+  },
+  {
+    id: 2,
+    user_id: 1,
+    user_name: "Dr. Marcus Vance",
+    role: "admin",
+    action: "WARD_BED_ALLOCATED",
+    entity_type: "Bed",
+    entity_id: "ICU-102",
+    details: "Assigned patient Rajesh Sharma (MRN-2026-1125) to Bed ICU-102.",
+    ip_address: "192.168.1.104",
+    created_at: "2026-11-04T12:15:00Z"
+  },
+  {
+    id: 3,
+    user_id: 2,
+    user_name: "Dr. Eleanor Hayes",
+    role: "doctor",
+    action: "LAB_TEST_AUTHORIZED",
+    entity_type: "LabTest",
+    entity_id: "LAB-2026-105",
+    details: "Authorized High Sensitivity Cardiac Troponin-I results for Rajesh Sharma.",
+    ip_address: "192.168.1.118",
+    created_at: "2026-11-04T14:30:00Z"
+  },
+  {
+    id: 4,
+    user_id: 3,
+    user_name: "Sarah Jenkins, RN",
+    role: "staff",
+    action: "BILLING_PAYMENT_PROCESSED",
+    entity_type: "Invoice",
+    entity_id: "INV-2026-0884",
+    details: "Collected ₹8,610 for Invoice INV-2026-0884 via Star Health TPA Card.",
+    ip_address: "192.168.1.142",
+    created_at: "2026-11-05T10:00:00Z"
+  }
+];
+
+const defaultSettings = {
+  hospital_name: "MedicalCare International Hospital & Research Center",
+  tagline: "World-Class Healthcare, Compassionate Clinical Excellence",
+  emergency_phone: "+1 (800) 273-9227",
+  general_phone: "+1 (555) 019-2000",
+  contact_email: "care@medicalcarehospital.org",
+  address_line1: "740 Health Sciences Boulevard, Medical District",
+  city: "Chicago",
+  state: "IL",
+  zip: "60611",
+  currency_symbol: "₹",
+  tax_percentage: "5.0",
+  working_hours: "24/7 Emergency & Inpatient Care | Outpatient Clinics: Mon-Sat 8:00 AM - 8:00 PM",
+  ambulance_hotline: "911 / SpeedDial #119"
+};
+
+const fullStore = {
+  users: defaultUsers,
+  departments: defaultDepartments,
+  doctors: defaultDoctors,
+  patients: defaultPatients,
+  wards: defaultWards,
+  beds: defaultBeds,
+  pharmacy_items: defaultPharmacyItems,
+  appointments: defaultAppointments,
+  lab_tests: defaultLabTests,
+  invoices: defaultInvoices,
+  prescriptions: defaultPrescriptions,
+  staff: defaultStaff,
+  attendance: defaultAttendance,
+  notifications: defaultNotifications,
+  audit_logs: defaultAuditLogs,
+  settings: defaultSettings
+};
+
+// Write store file
+fs.writeFileSync(STORE_PATH, JSON.stringify(fullStore, null, 2), 'utf-8');
+console.log(`[SEED] Successfully wrote ${STORE_PATH}`);
+
+// Write seedData.js
+const seedContent = `// Comprehensive initial seed data for Hospital Management System
+export const defaultUsers = ${JSON.stringify(defaultUsers, null, 2)};
+
+export const defaultDepartments = ${JSON.stringify(defaultDepartments, null, 2)};
+
+export const defaultDoctors = ${JSON.stringify(defaultDoctors, null, 2)};
+
+export const defaultPatients = ${JSON.stringify(defaultPatients, null, 2)};
+
+export const defaultWards = ${JSON.stringify(defaultWards, null, 2)};
+
+export const defaultBeds = ${JSON.stringify(defaultBeds, null, 2)};
+
+export const defaultPharmacyItems = ${JSON.stringify(defaultPharmacyItems, null, 2)};
+
+export const defaultAppointments = ${JSON.stringify(defaultAppointments, null, 2)};
+
+export const defaultLabTests = ${JSON.stringify(defaultLabTests, null, 2)};
+
+export const defaultInvoices = ${JSON.stringify(defaultInvoices, null, 2)};
+
+export const defaultPrescriptions = ${JSON.stringify(defaultPrescriptions, null, 2)};
+
+export const defaultAuditLogs = ${JSON.stringify(defaultAuditLogs, null, 2)};
+
+export const defaultSettings = ${JSON.stringify(defaultSettings, null, 2)};
+
+export const defaultStaff = ${JSON.stringify(defaultStaff, null, 2)};
+
+export const defaultAttendance = ${JSON.stringify(defaultAttendance, null, 2)};
+
+export const defaultNotifications = ${JSON.stringify(defaultNotifications, null, 2)};
+`;
+
+fs.writeFileSync(SEED_PATH, seedContent, 'utf-8');
+console.log(`[SEED] Successfully wrote ${SEED_PATH}`);
