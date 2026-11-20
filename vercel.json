@@ -1,6 +1,10 @@
 {
-  "framework": "vite",
-  "outputDirectory": "dist",
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
