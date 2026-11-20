@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { initDatabase, db } from './config/db.js';
 
 import authRoutes from './routes/auth.routes.js';
@@ -27,6 +30,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.resolve(__dirname, '../dist');
+const indexHtmlPath = path.join(distPath, 'index.html');
+
 // Middlewares
 app.use(cors({
   origin: true,
@@ -34,6 +42,11 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
+
+// Serve static assets from production build if available
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
 
 // Mount Modular API Routes
 app.use('/api/auth', authRoutes);
@@ -61,6 +74,33 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     service: 'ApexCare Hospital Management System API',
     databaseMode: db.getMode()
+  });
+});
+
+// Intelligent Frontend Router & Auto-Redirect (Never show "Cannot GET /")
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+
+  const host = req.hostname || 'localhost';
+  const targetUrl = `http://${host}:5173${req.originalUrl || req.url || '/'}`;
+
+  // In production mode, serve the built Vite SPA index.html
+  if (process.env.NODE_ENV === 'production' && fs.existsSync(indexHtmlPath)) {
+    return res.sendFile(indexHtmlPath);
+  }
+
+  // In development, automatically redirect any browser request to Vite Frontend (port 5173)
+  if (req.accepts('html')) {
+    return res.redirect(targetUrl);
+  }
+
+  res.json({
+    status: 'online',
+    message: 'ApexCare Hospital API Server is active. Frontend is running on port 5173.',
+    frontendUrl: targetUrl,
+    healthCheck: `http://${host}:${PORT}/api/health`
   });
 });
 
