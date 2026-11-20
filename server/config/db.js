@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import dotenv from 'dotenv';
 import {
   defaultUsers,
@@ -23,12 +24,20 @@ import {
 
 dotenv.config();
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isVercel = Boolean(process.env.VERCEL);
 const DATA_DIR = isVercel ? '/tmp' : path.join(__dirname, '..', 'data');
 const BUNDLED_STORE_PATH = path.join(__dirname, '..', 'data', 'hospital_store.json');
 const STORE_PATH = isVercel ? path.join('/tmp', 'hospital_store.json') : BUNDLED_STORE_PATH;
+
+let bundledStore = null;
+try {
+  bundledStore = require('../data/hospital_store.json');
+} catch (e) {
+  console.warn('Could not statically load hospital_store.json via require:', e.message);
+}
 
 let mode = 'firestore_resilient_store';
 let storeData = null;
@@ -42,11 +51,17 @@ if (!fs.existsSync(DATA_DIR)) {
 
 function loadLocalStore() {
   // On Vercel, copy bundled store file to writable /tmp if not already present
-  if (isVercel && !fs.existsSync(STORE_PATH) && fs.existsSync(BUNDLED_STORE_PATH)) {
-    try {
-      fs.copyFileSync(BUNDLED_STORE_PATH, STORE_PATH);
-    } catch (e) {
-      console.warn('Could not copy bundled store to /tmp:', e.message);
+  if (isVercel && !fs.existsSync(STORE_PATH)) {
+    if (bundledStore) {
+      try {
+        fs.writeFileSync(STORE_PATH, JSON.stringify(bundledStore, null, 2), 'utf-8');
+      } catch (e) {
+        console.warn('Could not write bundledStore to /tmp:', e.message);
+      }
+    } else if (fs.existsSync(BUNDLED_STORE_PATH)) {
+      try {
+        fs.copyFileSync(BUNDLED_STORE_PATH, STORE_PATH);
+      } catch (e) {}
     }
   }
 
@@ -54,12 +69,13 @@ function loadLocalStore() {
     try {
       const content = fs.readFileSync(STORE_PATH, 'utf-8');
       storeData = JSON.parse(content);
+      if (!storeData.users || !storeData.users.length) storeData.users = bundledStore?.users || [...defaultUsers];
       if (!storeData.staff || !storeData.staff.length) storeData.staff = [...defaultStaff];
       if (!storeData.attendance) storeData.attendance = [...defaultAttendance];
       if (!storeData.notifications) storeData.notifications = [...defaultNotifications];
       if (!storeData.prescriptions) storeData.prescriptions = [...defaultPrescriptions];
       if (!storeData.patient_registrations) storeData.patient_registrations = [];
-      if (!storeData.nurses) storeData.nurses = [];
+      if (!storeData.nurses) storeData.nurses = bundledStore?.nurses || [];
       if (!storeData.consultations) storeData.consultations = [];
       if (!storeData.whatsapp_logs) storeData.whatsapp_logs = [];
       if (!storeData.nurse_doctor_assignments) storeData.nurse_doctor_assignments = [];
@@ -68,6 +84,13 @@ function loadLocalStore() {
     } catch (err) {
       console.warn('Failed to parse existing hospital_store.json, creating new default store:', err.message);
     }
+  }
+
+  // Fallback to static bundled store if available
+  if (bundledStore) {
+    storeData = JSON.parse(JSON.stringify(bundledStore));
+    saveLocalStore();
+    return storeData;
   }
 
   storeData = {
@@ -86,7 +109,12 @@ function loadLocalStore() {
     attendance: [...defaultAttendance],
     notifications: [...defaultNotifications],
     audit_logs: [...defaultAuditLogs],
-    settings: { ...defaultSettings }
+    settings: { ...defaultSettings },
+    patient_registrations: [],
+    nurses: [],
+    consultations: [],
+    whatsapp_logs: [],
+    nurse_doctor_assignments: []
   };
   saveLocalStore();
   return storeData;
@@ -101,6 +129,16 @@ function saveLocalStore() {
   }
 }
 
+export function getSafeStore() {
+  if (!storeData) {
+    loadLocalStore();
+  }
+  return storeData;
+}
+
+// Immediate load so storeData is NEVER null upon any import
+loadLocalStore();
+
 export async function initDatabase() {
   loadLocalStore();
   console.log('[DB] Database initialized in Firebase-synchronized resilient data store mode.');
@@ -108,18 +146,20 @@ export async function initDatabase() {
 
 export const db = {
   getMode: () => mode,
-  getStore: () => storeData,
+  getStore: () => getSafeStore(),
 
   // Universal collections access
   async getCollection(collectionName) {
-    if (!storeData[collectionName]) {
-      storeData[collectionName] = [];
+    const s = getSafeStore();
+    if (!s[collectionName]) {
+      s[collectionName] = [];
     }
-    return storeData[collectionName];
+    return s[collectionName];
   },
 
   async findById(collectionName, id) {
-    const items = storeData[collectionName] || [];
+    const s = getSafeStore();
+    const items = s[collectionName] || [];
     return items.find(item => 
       item.id === id || 
       String(item.id) === String(id) ||
@@ -128,10 +168,11 @@ export const db = {
   },
 
   async insert(collectionName, item) {
-    if (!storeData[collectionName]) {
-      storeData[collectionName] = [];
+    const s = getSafeStore();
+    if (!s[collectionName]) {
+      s[collectionName] = [];
     }
-    const items = storeData[collectionName];
+    const items = s[collectionName];
     const maxId = items.reduce((max, i) => Math.max(max, i.id || 0), 0);
     const newItem = {
       id: maxId + 1,
@@ -145,7 +186,8 @@ export const db = {
 
   async update(collectionName, id, updates) {
     const numericId = parseInt(id, 10);
-    const items = storeData[collectionName] || [];
+    const s = getSafeStore();
+    const items = s[collectionName] || [];
     const index = items.findIndex(i => i.id === numericId);
     if (index === -1) return null;
 
@@ -160,7 +202,8 @@ export const db = {
 
   async delete(collectionName, id) {
     const numericId = parseInt(id, 10);
-    const items = storeData[collectionName] || [];
+    const s = getSafeStore();
+    const items = s[collectionName] || [];
     const index = items.findIndex(i => i.id === numericId);
     if (index === -1) return false;
     items.splice(index, 1);
@@ -169,21 +212,24 @@ export const db = {
   },
 
   async getSettings() {
-    return storeData?.settings || defaultSettings;
+    const s = getSafeStore();
+    return s?.settings || defaultSettings;
   },
 
   async updateSettings(newSettings) {
-    storeData.settings = {
-      ...storeData.settings,
+    const s = getSafeStore();
+    s.settings = {
+      ...s.settings,
       ...newSettings
     };
     saveLocalStore();
-    return storeData.settings;
+    return s.settings;
   },
 
   async addAuditLog(entry) {
+    const s = getSafeStore();
     const log = {
-      id: (storeData.audit_logs?.length || 0) + 1,
+      id: (s.audit_logs?.length || 0) + 1,
       user_id: entry.user_id || null,
       user_name: entry.user_name || 'System',
       role: entry.role || 'system',
@@ -194,8 +240,8 @@ export const db = {
       ip_address: entry.ip_address || '127.0.0.1',
       created_at: new Date().toISOString()
     };
-    if (!storeData.audit_logs) storeData.audit_logs = [];
-    storeData.audit_logs.unshift(log);
+    if (!s.audit_logs) s.audit_logs = [];
+    s.audit_logs.unshift(log);
     saveLocalStore();
     return log;
   }
