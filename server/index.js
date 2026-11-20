@@ -32,7 +32,12 @@ const PORT = process.env.PORT || 5000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const distPath = path.resolve(__dirname, '../dist');
+const possibleDistPaths = [
+  path.join(process.cwd(), 'dist'),
+  path.resolve(__dirname, '../dist'),
+  path.resolve(__dirname, 'dist')
+];
+const distPath = possibleDistPaths.find(p => fs.existsSync(p)) || possibleDistPaths[1];
 const indexHtmlPath = path.join(distPath, 'index.html');
 
 // Middlewares
