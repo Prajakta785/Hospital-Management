@@ -685,7 +685,7 @@ export function NurseDashboard({ setActivePage }) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={loadRegistrations}
+                onClick={loadData}
                 disabled={loading}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
               >
