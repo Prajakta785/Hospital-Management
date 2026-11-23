@@ -206,17 +206,11 @@ function MainApp() {
     return <DoctorPanel setActivePage={setActivePage} />;
   }
 
-  // 4. QR Patient Registration Page View
+  // 4. QR Patient Registration Page View (Dedicated Full-Screen Patient Intake Form - No Bottom App Bar)
   if (activePage === 'register-qr' || activePage === 'qr_registration') {
     return (
-      <div className="min-h-screen flex flex-col pb-20 md:pb-0">
+      <div className="min-h-screen flex flex-col bg-slate-50">
         <QrRegistrationPage setActivePage={setActivePage} />
-        <MobileAppBottomBar
-          activePage={activePage}
-          setActivePage={setActivePage}
-          onOpenQrModal={() => setQrModalOpen(true)}
-          onOpenBookingModal={() => handleOpenBookingModal()}
-        />
       </div>
     );
   }
