@@ -387,9 +387,55 @@ router.get('/lookup-patient', async (req, res) => {
   }
 });
 
+// --------------------------------------------------------------------------
+// AUTOMATIC CLOUD SYNC HELPER:
+// Syncs iOS / Android registrations made on Vercel QR code to local machine
+// --------------------------------------------------------------------------
+const CLOUD_SYNC_URL = 'https://hospital-management-system-swart-nu.vercel.app/api/workflow/registrations';
+
+async function syncFromCloud() {
+  if (process.env.VERCEL) return;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(CLOUD_SYNC_URL, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.success && Array.isArray(json.data)) {
+        const localList = await db.getCollection('patient_registrations');
+        let count = 0;
+        for (const cloudItem of json.data) {
+          const matchIndex = localList.findIndex(l => 
+            l.patient_id === cloudItem.patient_id && 
+            (l.registered_at === cloudItem.registered_at || l.created_at === cloudItem.created_at)
+          );
+          if (matchIndex === -1) {
+            localList.unshift(cloudItem);
+            count++;
+          }
+        }
+        if (count > 0) {
+          db.saveLocalStore();
+          console.log(`[Cloud Sync] Synced ${count} new registrations from Vercel cloud to local store.`);
+        }
+      }
+    }
+  } catch (err) {
+    // Ignore offline or network drop
+  }
+}
+
+// Initial sync on startup
+if (!process.env.VERCEL) {
+  setTimeout(syncFromCloud, 2000);
+  setInterval(syncFromCloud, 20000); // Periodic 20s auto-sync
+}
+
 // GET /api/workflow/registrations
 router.get('/registrations', async (req, res) => {
   try {
+    await syncFromCloud();
     const { status, search, doctorId } = req.query;
     let list = await db.getCollection('patient_registrations');
 

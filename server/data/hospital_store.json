@@ -1487,6 +1487,42 @@
   ],
   "audit_logs": [
     {
+      "id": 44,
+      "user_id": 1,
+      "user_name": "Dr. Marcus Vance",
+      "role": "superadmin",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "1",
+      "details": "Dr. Marcus Vance logged into superadmin panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T08:44:52.269Z"
+    },
+    {
+      "id": 43,
+      "user_id": 5,
+      "user_name": "Sarah Jenkins, RN",
+      "role": "nurse",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "5",
+      "details": "Sarah Jenkins, RN logged into nurse panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T08:42:52.481Z"
+    },
+    {
+      "id": 42,
+      "user_id": 1,
+      "user_name": "Dr. Marcus Vance",
+      "role": "superadmin",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "1",
+      "details": "Dr. Marcus Vance logged into superadmin panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T08:42:21.248Z"
+    },
+    {
       "id": 41,
       "user_id": 5,
       "user_name": "Sarah Jenkins, RN",
@@ -1989,7 +2025,7 @@
     "city": "Chicago",
     "state": "IL",
     "zip": "60611",
-    "currency_symbol": "₹",
+    "currency_symbol": "â‚¹",
     "tax_percentage": "5.0",
     "working_hours": "24/7 Emergency & Inpatient Care | Outpatient Clinics: Mon-Sat 8:00 AM - 8:00 PM",
     "ambulance_hotline": "911 / SpeedDial #119"
@@ -2070,6 +2106,34 @@
     }
   ],
   "patient_registrations": [
+    {
+      "id": 3,
+      "patient_id": "PAT-2026-1413",
+      "name": "Prajwal",
+      "age": 22,
+      "dob": "1995-10-23",
+      "gender": "Male",
+      "phone": "7507700162",
+      "whatsapp_number": "+917507700162",
+      "whatsapp_consent": true,
+      "email": "abc@gmail.com",
+      "address": "Sangli",
+      "blood_group": "O+",
+      "symptoms": "Headache",
+      "medical_history": "No",
+      "emergency_contact": {
+        "name": "",
+        "phone": ""
+      },
+      "status": "Pending",
+      "assigned_doctor_id": null,
+      "assigned_doctor_name": null,
+      "assigned_nurse_id": null,
+      "assigned_nurse_name": null,
+      "nurse_notes": "",
+      "registered_at": "2026-11-23T08:41:42.349Z",
+      "created_at": "2026-11-23T08:41:42.349Z"
+    },
     {
       "id": 2,
       "patient_id": "PAT-2026-5352",
@@ -2214,8 +2278,8 @@
       "patient_name": "Prajakta Pawar",
       "phone": "+919657286343",
       "status": "Delivered",
-      "message_preview": "*🏥 ApexCare Multispeciality Hospital – Medical Prescription*\n\nDear *Prajakta Pawar*,\n\nYour doctor consultation has been completed successfully.\n\n*Patient Details:*\n• Patient ID: *...",
-      "full_message": "*🏥 ApexCare Multispeciality Hospital – Medical Prescription*\n\nDear *Prajakta Pawar*,\n\nYour doctor consultation has been completed successfully.\n\n*Patient Details:*\n• Patient ID: *PAT-2026-5352*\n• Doctor Name: *Dr. Neha Kapoor*\n• Diagnosis: *Acute presentation of: Fever . Headache*\n\n*💊 Prescribed Medicines:*\n• *Paracetamol 650mg* - 1 tab\n  Frequency: Twice daily | Duration: 3 days\n  Instructions: After Food\n\n• *Cetirizine 10mg* - 1 tab\n  Frequency: Once at bedtime | Duration: 5 days\n  Instructions: After Food\n\n*📝 Doctor's Instructions:*\nAdequate hydration advised. Avoid cold beverages and rest for 48 hours.\n\n*📅 Next Appointment:*\n• Date: *2026-11-26* at *11:00 AM*\n• Follow-up: Return immediately if chest tightness or persistent high temperature occurs.\n\n📄 *Download / View Official Prescription PDF:*\nhttp://localhost:5173/prescription/1\n\nYour digital prescription is also securely stored in your Patient Portal.\n\nThank you for choosing ApexCare Multispeciality Hospital.\nEmergency Helpline: 1800-273-9227",
+      "message_preview": "*ðŸ¥ ApexCare Multispeciality Hospital â€“ Medical Prescription*\n\nDear *Prajakta Pawar*,\n\nYour doctor consultation has been completed successfully.\n\n*Patient Details:*\nâ€¢ Patient ID: *...",
+      "full_message": "*ðŸ¥ ApexCare Multispeciality Hospital â€“ Medical Prescription*\n\nDear *Prajakta Pawar*,\n\nYour doctor consultation has been completed successfully.\n\n*Patient Details:*\nâ€¢ Patient ID: *PAT-2026-5352*\nâ€¢ Doctor Name: *Dr. Neha Kapoor*\nâ€¢ Diagnosis: *Acute presentation of: Fever . Headache*\n\n*ðŸ’Š Prescribed Medicines:*\nâ€¢ *Paracetamol 650mg* - 1 tab\n  Frequency: Twice daily | Duration: 3 days\n  Instructions: After Food\n\nâ€¢ *Cetirizine 10mg* - 1 tab\n  Frequency: Once at bedtime | Duration: 5 days\n  Instructions: After Food\n\n*ðŸ“ Doctor's Instructions:*\nAdequate hydration advised. Avoid cold beverages and rest for 48 hours.\n\n*ðŸ“… Next Appointment:*\nâ€¢ Date: *2026-11-26* at *11:00 AM*\nâ€¢ Follow-up: Return immediately if chest tightness or persistent high temperature occurs.\n\nðŸ“„ *Download / View Official Prescription PDF:*\nhttp://localhost:5173/prescription/1\n\nYour digital prescription is also securely stored in your Patient Portal.\n\nThank you for choosing ApexCare Multispeciality Hospital.\nEmergency Helpline: 1800-273-9227",
       "pdf_url": "http://localhost:5173/prescription/1",
       "web_intent_url": "https://api.whatsapp.com/send?phone=919657286343&text=*%F0%9F%8F%A5%20ApexCare%20Multispeciality%20Hospital%20%E2%80%93%20Medical%20Prescription*%0A%0ADear%20*Prajakta%20Pawar*%2C%0A%0AYour%20doctor%20consultation%20has%20been%20completed%20successfully.%0A%0A*Patient%20Details%3A*%0A%E2%80%A2%20Patient%20ID%3A%20*PAT-2026-5352*%0A%E2%80%A2%20Doctor%20Name%3A%20*Dr.%20Neha%20Kapoor*%0A%E2%80%A2%20Diagnosis%3A%20*Acute%20presentation%20of%3A%20Fever%20.%20Headache*%0A%0A*%F0%9F%92%8A%20Prescribed%20Medicines%3A*%0A%E2%80%A2%20*Paracetamol%20650mg*%20-%201%20tab%0A%20%20Frequency%3A%20Twice%20daily%20%7C%20Duration%3A%203%20days%0A%20%20Instructions%3A%20After%20Food%0A%0A%E2%80%A2%20*Cetirizine%2010mg*%20-%201%20tab%0A%20%20Frequency%3A%20Once%20at%20bedtime%20%7C%20Duration%3A%205%20days%0A%20%20Instructions%3A%20After%20Food%0A%0A*%F0%9F%93%9D%20Doctor's%20Instructions%3A*%0AAdequate%20hydration%20advised.%20Avoid%20cold%20beverages%20and%20rest%20for%2048%20hours.%0A%0A*%F0%9F%93%85%20Next%20Appointment%3A*%0A%E2%80%A2%20Date%3A%20*2026-11-26*%20at%20*11%3A00%20AM*%0A%E2%80%A2%20Follow-up%3A%20Return%20immediately%20if%20chest%20tightness%20or%20persistent%20high%20temperature%20occurs.%0A%0A%F0%9F%93%84%20*Download%20%2F%20View%20Official%20Prescription%20PDF%3A*%0Ahttp%3A%2F%2Flocalhost%3A5173%2Fprescription%2F1%0A%0AYour%20digital%20prescription%20is%20also%20securely%20stored%20in%20your%20Patient%20Portal.%0A%0AThank%20you%20for%20choosing%20ApexCare%20Multispeciality%20Hospital.%0AEmergency%20Helpline%3A%201800-273-9227",
       "external_message_id": "wa_msg_1795085129107",

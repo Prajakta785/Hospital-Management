@@ -369,6 +369,8 @@ export function SuperAdminDashboard({ setActivePage }) {
   useEffect(() => {
     if (currentUser) {
       loadAllData();
+      const interval = setInterval(loadAllData, 10000);
+      return () => clearInterval(interval);
     }
   }, [currentUser]);
 

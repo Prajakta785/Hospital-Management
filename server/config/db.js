@@ -147,6 +147,8 @@ export async function initDatabase() {
 export const db = {
   getMode: () => mode,
   getStore: () => getSafeStore(),
+  reload: () => loadLocalStore(),
+  saveLocalStore: () => saveLocalStore(),
 
   // Universal collections access
   async getCollection(collectionName) {
