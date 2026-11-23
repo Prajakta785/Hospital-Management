@@ -397,10 +397,10 @@ export function QrRegistrationPage({ setActivePage }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-blue-50/40 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-blue-50/40 py-3 sm:py-8 px-3 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Top Header / Back button */}
-        <div className="flex items-center justify-between mb-6 print:hidden">
+        <div className="flex items-center justify-between mb-3 sm:mb-6 print:hidden">
           <button
             onClick={() => setActivePage ? setActivePage('home') : window.location.href = '/'}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs transition-all cursor-pointer"

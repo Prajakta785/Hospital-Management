@@ -179,6 +179,15 @@ function MainApp() {
     setActivePage('booking');
   };
 
+  // 1. QR Patient Registration Page View (Dedicated Full-Screen Patient Intake Form - Opens Instantly on QR Scan without Auth Delay)
+  if (activePage === 'register-qr' || activePage === 'qr_registration') {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <QrRegistrationPage setActivePage={setActivePage} />
+      </div>
+    );
+  }
+
   // Loading Screen
   if (loading) {
     return (
@@ -191,28 +200,19 @@ function MainApp() {
     );
   }
 
-  // 1. Super Admin Panel Dedicated View (/superadmin or /admin)
+  // 2. Super Admin Panel Dedicated View (/superadmin or /admin)
   if (activePage === 'superadmin' || activePage === 'admin') {
     return <SuperAdminDashboard setActivePage={setActivePage} />;
   }
 
-  // 2. Nurse Panel Dedicated View (/nurse)
+  // 3. Nurse Panel Dedicated View (/nurse)
   if (activePage === 'nurse') {
     return <NurseDashboard setActivePage={setActivePage} />;
   }
 
-  // 3. Doctor Panel Dedicated View
+  // 4. Doctor Panel Dedicated View
   if (activePage === 'doctor' || activePage === 'doctor_panel') {
     return <DoctorPanel setActivePage={setActivePage} />;
-  }
-
-  // 4. QR Patient Registration Page View (Dedicated Full-Screen Patient Intake Form - No Bottom App Bar)
-  if (activePage === 'register-qr' || activePage === 'qr_registration') {
-    return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
-        <QrRegistrationPage setActivePage={setActivePage} />
-      </div>
-    );
   }
 
   // 5. Printable Prescription Page View
