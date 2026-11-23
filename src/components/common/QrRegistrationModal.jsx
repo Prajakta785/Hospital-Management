@@ -19,16 +19,7 @@ import {
 export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
-  const [qrMode, setQrMode] = useState('cloud'); // 'cloud' (recommended, works anywhere) | 'local' (same Wi-Fi)
   const [qrTimestamp, setQrTimestamp] = useState(() => Date.now());
-  const [networkIp, setNetworkIp] = useState(() => {
-    try {
-      const saved = localStorage.getItem('apexcare_custom_lan_ip');
-      return (saved && saved !== '192.168.1.30') ? saved : '192.168.1.40';
-    } catch {
-      return '192.168.1.40';
-    }
-  });
 
   const CLOUD_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
 
@@ -41,45 +32,13 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  // Fetch local LAN IP configured by Super Admin from backend
-  useEffect(() => {
-    fetch('/api/workflow/network-info')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.success && data.localIp && data.localIp !== '127.0.0.1') {
-          setNetworkIp(data.localIp);
-          try {
-            localStorage.setItem('apexcare_custom_lan_ip', data.localIp);
-          } catch {}
-        }
-      })
-      .catch(() => {});
-  }, [isOpen]);
-
-  // Compute scannable URL: Cloud URL works on ANY phone with Mobile Data or Wi-Fi
+  // Scannable URL: Universal Cloud URL works on ANY phone with Mobile Data or Wi-Fi
   // Adding ?scan=${qrTimestamp} guarantees each scan opens a fresh new form and mobile cameras trigger instantly
   const getScannableUrl = () => {
     let baseUrl = CLOUD_URL;
-    if (qrMode === 'cloud') {
-      if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-        baseUrl = `${window.location.origin}/register-qr`;
-      } else {
-        baseUrl = CLOUD_URL;
-      }
-    } else {
-      if (typeof window === 'undefined') {
-        baseUrl = `http://${networkIp}:5173/register-qr`;
-      } else {
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          const port = window.location.port || '5173';
-          baseUrl = `http://${networkIp}:${port}/register-qr`;
-        } else {
-          baseUrl = `${window.location.origin}/register-qr`;
-        }
-      }
+    if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
+      baseUrl = `${window.location.origin}/register-qr`;
     }
-
     return `${baseUrl}?scan=${qrTimestamp}`;
   };
 
@@ -143,34 +102,6 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
 
         {/* Body */}
         <div className="p-5 sm:p-6 text-center">
-
-          {/* Mode Selector Tabs: Cloud (Any Phone) vs Local Wi-Fi */}
-          <div className="flex items-center justify-center gap-1 p-1 mb-3 bg-slate-100 rounded-xl max-w-xs mx-auto">
-            <button
-              type="button"
-              onClick={() => setQrMode('cloud')}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                qrMode === 'cloud'
-                  ? 'bg-[#059669] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5 shrink-0" />
-              <span>🌐 Cloud (Any Phone)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setQrMode('local')}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                qrMode === 'local'
-                  ? 'bg-[#059669] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Wifi className="w-3.5 h-3.5 shrink-0" />
-              <span>📶 Local Wi-Fi</span>
-            </button>
-          </div>
           
           {/* iOS / Android Camera Compatible QR Box */}
           <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-2">
@@ -208,7 +139,7 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
           <div className="mb-3 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2 text-left">
             <div className="min-w-0 flex-1">
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                {qrMode === 'cloud' ? '🌐 Live Cloud Link (Opens on Any Phone):' : '📶 Local Wi-Fi Link (Same Network):'}
+                🌐 Live Patient Registration Link (Universal Cloud Access):
               </span>
               <a
                 href={registrationUrl}
