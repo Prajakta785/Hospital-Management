@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import os from 'os';
+import https from 'https';
 import { db } from '../config/db.js';
 import { generateToken, verifyToken } from '../middleware/authMiddleware.js';
 import { sendWhatsAppPrescription, normalizeWhatsAppNumber } from '../services/whatsappService.js';
@@ -272,11 +273,21 @@ router.post('/register', async (req, res) => {
 
     // Background push to Vercel Cloud so mobile and cloud stay in 100% sync
     if (!process.env.VERCEL) {
-      fetch('https://hospital-management-system-swart-nu.vercel.app/api/workflow/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(req.body)
-      }).catch(() => {});
+      try {
+        const postData = JSON.stringify(req.body);
+        const cloudReq = https.request('https://hospital-management-system-swart-nu.vercel.app/api/workflow/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData)
+          },
+          rejectUnauthorized: false,
+          timeout: 5000
+        });
+        cloudReq.on('error', () => {});
+        cloudReq.write(postData);
+        cloudReq.end();
+      } catch {}
     }
 
     // Add Audit Log
@@ -402,64 +413,86 @@ router.get('/lookup-patient', async (req, res) => {
 // --------------------------------------------------------------------------
 const CLOUD_SYNC_URL = 'https://hospital-management-system-swart-nu.vercel.app/api/workflow/registrations';
 
+function fetchCloudRegistrations() {
+  return new Promise((resolve) => {
+    try {
+      const req = https.get(CLOUD_SYNC_URL, { rejectUnauthorized: false, timeout: 5000 }, (res) => {
+        if (res.statusCode !== 200) return resolve(null);
+        let raw = '';
+        res.on('data', chunk => raw += chunk);
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(raw));
+          } catch {
+            resolve(null);
+          }
+        });
+      });
+      req.on('error', (e) => {
+        resolve(null);
+      });
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(null);
+      });
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 async function syncFromCloud() {
   if (process.env.VERCEL) return;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-    const res = await fetch(CLOUD_SYNC_URL, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (res.ok) {
-      const json = await res.json();
-      if (json && json.success && Array.isArray(json.data)) {
-        const localList = await db.getCollection('patient_registrations');
-        const localPatients = await db.getCollection('patients');
-        let count = 0;
-        for (const cloudItem of json.data) {
-          const matchIndex = localList.findIndex(l => 
-            l.patient_id === cloudItem.patient_id && 
-            (l.registered_at === cloudItem.registered_at || l.created_at === cloudItem.created_at)
-          );
-          if (matchIndex === -1) {
-            localList.unshift(cloudItem);
-            count++;
-          } else if (cloudItem.status && cloudItem.status !== localList[matchIndex].status) {
-            localList[matchIndex] = { ...localList[matchIndex], ...cloudItem };
-            count++;
-          }
+    const json = await fetchCloudRegistrations();
+    if (json && json.success && Array.isArray(json.data)) {
+      const localList = await db.getCollection('patient_registrations');
+      const localPatients = await db.getCollection('patients');
+      let count = 0;
+      for (const cloudItem of json.data) {
+        const matchIndex = localList.findIndex(l => 
+          l.patient_id === cloudItem.patient_id && 
+          (l.registered_at === cloudItem.registered_at || l.created_at === cloudItem.created_at)
+        );
+        if (matchIndex === -1) {
+          localList.unshift(cloudItem);
+          count++;
+        } else if (cloudItem.status && cloudItem.status !== localList[matchIndex].status) {
+          localList[matchIndex] = { ...localList[matchIndex], ...cloudItem };
+          count++;
+        }
 
-          // Also populate general patients collection for EHR consistency
-          const existingPat = localPatients.find(p => 
-            p.mrn === cloudItem.patient_id || 
-            (cloudItem.phone && p.phone === cloudItem.phone)
-          );
-          if (!existingPat && cloudItem.name) {
-            const [first, ...lastParts] = cloudItem.name.trim().split(' ');
-            localPatients.unshift({
-              id: localPatients.length + 1,
-              mrn: cloudItem.patient_id,
-              first_name: first,
-              last_name: lastParts.join(' ') || 'Patient',
-              age: parseInt(cloudItem.age, 10) || 30,
-              dob: cloudItem.dob || '1995-01-01',
-              gender: cloudItem.gender || 'Male',
-              blood_group: cloudItem.blood_group || 'O+',
-              phone: cloudItem.phone || '',
-              email: cloudItem.email || '',
-              address: cloudItem.address || '',
-              allergies: 'None recorded',
-              medical_history: cloudItem.medical_history || '',
-              insurance_provider: 'Self-Pay',
-              admission_status: 'outpatient',
-              created_at: cloudItem.registered_at || new Date().toISOString()
-            });
-            count++;
-          }
+        // Also populate general patients collection for EHR consistency
+        const existingPat = localPatients.find(p => 
+          p.mrn === cloudItem.patient_id || 
+          (cloudItem.phone && p.phone === cloudItem.phone)
+        );
+        if (!existingPat && cloudItem.name) {
+          const [first, ...lastParts] = cloudItem.name.trim().split(' ');
+          localPatients.unshift({
+            id: localPatients.length + 1,
+            mrn: cloudItem.patient_id,
+            first_name: first,
+            last_name: lastParts.join(' ') || 'Patient',
+            age: parseInt(cloudItem.age, 10) || 30,
+            dob: cloudItem.dob || '1995-01-01',
+            gender: cloudItem.gender || 'Male',
+            blood_group: cloudItem.blood_group || 'O+',
+            phone: cloudItem.phone || '',
+            email: cloudItem.email || '',
+            address: cloudItem.address || '',
+            allergies: 'None recorded',
+            medical_history: cloudItem.medical_history || '',
+            insurance_provider: 'Self-Pay',
+            admission_status: 'outpatient',
+            created_at: cloudItem.registered_at || new Date().toISOString()
+          });
+          count++;
         }
-        if (count > 0) {
-          db.saveLocalStore();
-          console.log(`[Cloud Sync] Synced ${count} updates from Vercel cloud to local store.`);
-        }
+      }
+      if (count > 0) {
+        db.saveLocalStore();
+        console.log(`[Cloud Sync] Synced ${count} updates from Vercel cloud to local store.`);
       }
     }
   } catch (err) {
