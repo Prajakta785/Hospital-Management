@@ -1731,9 +1731,23 @@ export function SuperAdminDashboard({ setActivePage }) {
                 <h2 className="text-base font-bold text-slate-900">QR Patient Registrations Registry</h2>
                 <p className="text-xs text-slate-500">Live feed of all patient self-registrations and clinical triage states.</p>
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Primary Triage Desk: <strong>Nurse Panel (/nurse)</strong></span>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await loadAllData();
+                  }}
+                  disabled={loadingData}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#059669] hover:bg-[#047857] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  title="Pull latest iOS / Android mobile QR registrations"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingData ? 'animate-spin' : ''}`} />
+                  <span>Sync Mobile Registrations</span>
+                </button>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Live Mobile (iOS / Android) Sync Active</span>
+                </div>
               </div>
             </div>
 
@@ -1870,7 +1884,12 @@ export function SuperAdminDashboard({ setActivePage }) {
                       </td>
                       <td className="py-3 px-3">
                         <span className="font-bold text-slate-900 block">{reg.name}</span>
-                        <span className="text-[11px] text-slate-500">{reg.gender} • {reg.blood_group}</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[11px] text-slate-500">{reg.gender} • {reg.blood_group}</span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            📱 iOS / Android QR
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3 px-3 font-mono text-slate-700">
                         {reg.phone}

@@ -672,11 +672,28 @@ export function NurseDashboard({ setActivePage }) {
 
         {/* Patient Registrations Table */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900">
-              Patient Queue ({filteredRegistrations.length} records)
-            </h3>
-            <span className="text-[11px] text-slate-500">Live Triage Dispatch</span>
+          <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h3 className="text-sm font-bold text-slate-900">
+                Patient Queue ({filteredRegistrations.length} records)
+              </h3>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Sync 4s
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={loadRegistrations}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <span>Sync Mobile Intake</span>
+              </button>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">Live Triage Dispatch</span>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -701,9 +718,14 @@ export function NurseDashboard({ setActivePage }) {
                     </td>
                     <td className="py-3 px-3">
                       <span className="font-bold text-slate-900 block">{patient.name}</span>
-                      <span className="text-[11px] text-slate-500">
-                        {patient.age ? `${patient.age} yrs` : 'N/A'} • {patient.gender} • <strong className="text-rose-700">{patient.blood_group}</strong>
-                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[11px] text-slate-500">
+                          {patient.age ? `${patient.age} yrs` : 'N/A'} • {patient.gender} • <strong className="text-rose-700">{patient.blood_group}</strong>
+                        </span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          📱 Mobile QR
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3 px-3">
                       <span className="inline-flex items-center gap-1 font-semibold text-emerald-900 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 text-[11px] whitespace-nowrap">

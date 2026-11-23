@@ -270,6 +270,15 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // Background push to Vercel Cloud so mobile and cloud stay in 100% sync
+    if (!process.env.VERCEL) {
+      fetch('https://hospital-management-system-swart-nu.vercel.app/api/workflow/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body)
+      }).catch(() => {});
+    }
+
     // Add Audit Log
     await db.addAuditLog({
       user_name: name.trim(),
@@ -397,13 +406,14 @@ async function syncFromCloud() {
   if (process.env.VERCEL) return;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    const timeout = setTimeout(() => controller.abort(), 3500);
     const res = await fetch(CLOUD_SYNC_URL, { signal: controller.signal });
     clearTimeout(timeout);
     if (res.ok) {
       const json = await res.json();
       if (json && json.success && Array.isArray(json.data)) {
         const localList = await db.getCollection('patient_registrations');
+        const localPatients = await db.getCollection('patients');
         let count = 0;
         for (const cloudItem of json.data) {
           const matchIndex = localList.findIndex(l => 
@@ -413,28 +423,60 @@ async function syncFromCloud() {
           if (matchIndex === -1) {
             localList.unshift(cloudItem);
             count++;
+          } else if (cloudItem.status && cloudItem.status !== localList[matchIndex].status) {
+            localList[matchIndex] = { ...localList[matchIndex], ...cloudItem };
+            count++;
+          }
+
+          // Also populate general patients collection for EHR consistency
+          const existingPat = localPatients.find(p => 
+            p.mrn === cloudItem.patient_id || 
+            (cloudItem.phone && p.phone === cloudItem.phone)
+          );
+          if (!existingPat && cloudItem.name) {
+            const [first, ...lastParts] = cloudItem.name.trim().split(' ');
+            localPatients.unshift({
+              id: localPatients.length + 1,
+              mrn: cloudItem.patient_id,
+              first_name: first,
+              last_name: lastParts.join(' ') || 'Patient',
+              age: parseInt(cloudItem.age, 10) || 30,
+              dob: cloudItem.dob || '1995-01-01',
+              gender: cloudItem.gender || 'Male',
+              blood_group: cloudItem.blood_group || 'O+',
+              phone: cloudItem.phone || '',
+              email: cloudItem.email || '',
+              address: cloudItem.address || '',
+              allergies: 'None recorded',
+              medical_history: cloudItem.medical_history || '',
+              insurance_provider: 'Self-Pay',
+              admission_status: 'outpatient',
+              created_at: cloudItem.registered_at || new Date().toISOString()
+            });
+            count++;
           }
         }
         if (count > 0) {
           db.saveLocalStore();
-          console.log(`[Cloud Sync] Synced ${count} new registrations from Vercel cloud to local store.`);
+          console.log(`[Cloud Sync] Synced ${count} updates from Vercel cloud to local store.`);
         }
       }
     }
   } catch (err) {
-    // Ignore offline or network drop
+    // Ignore network drop
   }
 }
 
 // Initial sync on startup
 if (!process.env.VERCEL) {
-  setTimeout(syncFromCloud, 2000);
-  setInterval(syncFromCloud, 20000); // Periodic 20s auto-sync
+  setTimeout(syncFromCloud, 1000);
+  setInterval(syncFromCloud, 15000); // Periodic 15s auto-sync
 }
 
 // GET /api/workflow/registrations
 router.get('/registrations', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     await syncFromCloud();
     const { status, search, doctorId } = req.query;
     let list = await db.getCollection('patient_registrations');
@@ -883,6 +925,7 @@ router.post('/whatsapp/resend', async (req, res) => {
 // GET /api/workflow/stats (Super Admin Dashboard Metrics)
 router.get('/stats', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     const patients = await db.getCollection('patients');
     const registrations = await db.getCollection('patient_registrations');
     const doctors = await db.getCollection('doctors');
