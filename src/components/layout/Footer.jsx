@@ -69,15 +69,6 @@ export function Footer({ setActivePage }) {
               </li>
               <li>
                 <button
-                  onClick={() => setActivePage('booking')}
-                  className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group text-left cursor-pointer"
-                >
-                  <span className="text-emerald-500 group-hover:text-emerald-300 transition-colors">›</span>
-                  <span>Book Clinical Appointment</span>
-                </button>
-              </li>
-              <li>
-                <button
                   onClick={() => setActivePage('register-qr')}
                   className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group text-left cursor-pointer"
                 >

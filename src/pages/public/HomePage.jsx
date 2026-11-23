@@ -129,7 +129,7 @@ const departmentShowcaseSlides = [
   }
 ];
 
-export function HomePage({ setActivePage, onSelectDoctorForBooking, onOpenBookingModal, onSelectDepartment, onOpenQrModal }) {
+export function HomePage({ setActivePage, onSelectDepartment, onOpenQrModal }) {
   const [departments, setDepartments] = useState(() => fallbackDepartments.slice(0, 6));
   const [doctors, setDoctors] = useState(() => fallbackDoctors.slice(0, 4));
   const [loading, setLoading] = useState(false);

@@ -13,7 +13,7 @@ import {
   QrCode
 } from 'lucide-react';
 
-export function Navbar({ activePage, setActivePage, onOpenBookingModal, onOpenQrModal }) {
+export function Navbar({ activePage, setActivePage, onOpenQrModal }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

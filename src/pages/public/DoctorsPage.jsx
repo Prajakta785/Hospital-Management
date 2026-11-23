@@ -14,7 +14,7 @@ import {
   QrCode
 } from 'lucide-react';
 
-export function DoctorsPage({ setActivePage, onSelectDoctorForBooking, onOpenBookingModal, onOpenQrModal }) {
+export function DoctorsPage({ setActivePage, onOpenQrModal }) {
   const [doctors, setDoctors] = useState(() => fallbackDoctors);
   const [departments, setDepartments] = useState(() => fallbackDepartments);
   const [selectedDeptId, setSelectedDeptId] = useState('all');
@@ -73,7 +73,7 @@ export function DoctorsPage({ setActivePage, onSelectDoctorForBooking, onOpenBoo
               Find Your Specialist Doctor
             </h1>
             <p className="max-w-xl mx-auto text-xs sm:text-sm text-emerald-100/90">
-              Book appointments directly with our board-certified medical leaders, senior surgeons, and clinical professors.
+              Consult directly with our board-certified medical leaders, senior surgeons, and clinical professors.
             </p>
           </div>
         </div>

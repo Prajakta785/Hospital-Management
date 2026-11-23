@@ -12,8 +12,7 @@ import {
 export function MobileAppBottomBar({
   activePage,
   setActivePage,
-  onOpenQrModal,
-  onOpenBookingModal
+  onOpenQrModal
 }) {
   const isQrActive = activePage === 'register-qr' || activePage === 'qr_registration';
   const isHomeActive = activePage === 'home';

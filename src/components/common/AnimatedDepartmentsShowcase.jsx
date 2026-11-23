@@ -479,10 +479,10 @@ export function AnimatedDepartmentsShowcase({ setActivePage, onSelectDoctorForBo
               <span>Full-Time Specialist System (FTSS) ensuring 24/7 consultant availability.</span>
             </div>
             <button
-              onClick={() => setActivePage('booking')}
-              className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition-all shadow-md cursor-pointer"
+              onClick={() => setActivePage('register-qr')}
+              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold transition-all shadow-md cursor-pointer flex items-center gap-2"
             >
-              Consult a Specialist
+              <span>OPD Patient Registration</span>
             </button>
           </div>
         </div>

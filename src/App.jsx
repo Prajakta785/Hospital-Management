@@ -4,15 +4,12 @@ import { ToastProvider } from './context/ToastContext.jsx';
 
 import { Navbar } from './components/layout/Navbar.jsx';
 import { Footer } from './components/layout/Footer.jsx';
-import { AppointmentBookingModal } from './components/common/AppointmentBookingModal.jsx';
-import { AppointmentSlipModal } from './components/common/AppointmentSlipModal.jsx';
 
 // Public Website Pages
 import { HomePage } from './pages/public/HomePage.jsx';
 import { AboutPage } from './pages/public/AboutPage.jsx';
 import { DoctorsPage } from './pages/public/DoctorsPage.jsx';
 import { DepartmentsPage } from './pages/public/DepartmentsPage.jsx';
-import { AppointmentBookingPage } from './pages/public/AppointmentBookingPage.jsx';
 import { ContactPage } from './pages/public/ContactPage.jsx';
 import { AuthPage } from './pages/auth/AuthPage.jsx';
 
@@ -79,9 +76,12 @@ function getInitialPage() {
     return 'staff_portal';
   }
 
-  // Public Pages
-  if (['about', 'doctors', 'departments', 'booking', 'contact', 'auth'].includes(target)) {
+  // Public Pages (Redirect any legacy booking directly to QR Registration)
+  if (['about', 'doctors', 'departments', 'contact', 'auth'].includes(target)) {
     return target;
+  }
+  if (target === 'booking') {
+    return 'register-qr';
   }
 
   return 'home';
@@ -90,14 +90,7 @@ function getInitialPage() {
 function MainApp() {
   const { user, isAuthenticated, loading } = useAuth();
   const [activePage, setActivePage] = useState(getInitialPage);
-  const [selectedDoctorForBooking, setSelectedDoctorForBooking] = useState(null);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
-
-  // Quick Booking Form Modal State
-  const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [bookingModalDoctor, setBookingModalDoctor] = useState(null);
-  const [confirmedSlip, setConfirmedSlip] = useState(null);
-  const [slipModalOpen, setSlipModalOpen] = useState(false);
 
   // QR Patient Registration Modal State
   const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -163,21 +156,6 @@ function MainApp() {
       window.removeEventListener('hashchange', handlePopState);
     };
   }, []);
-
-  const handleOpenBookingModal = (doctor = null) => {
-    setBookingModalDoctor(doctor);
-    setBookingModalOpen(true);
-  };
-
-  const handleBookingSuccess = (appointment) => {
-    setConfirmedSlip(appointment);
-    setSlipModalOpen(true);
-  };
-
-  const handleSelectDoctorForBooking = (doctor) => {
-    setSelectedDoctorForBooking(doctor);
-    setActivePage('booking');
-  };
 
   // 1. QR Patient Registration Page View (Dedicated Full-Screen Patient Intake Form - Opens Instantly on QR Scan without Auth Delay)
   if (activePage === 'register-qr' || activePage === 'qr_registration') {
@@ -246,7 +224,6 @@ function MainApp() {
       <Navbar
         activePage={activePage}
         setActivePage={setActivePage}
-        onOpenBookingModal={() => handleOpenBookingModal()}
         onOpenQrModal={() => setQrModalOpen(true)}
       />
 
@@ -254,8 +231,6 @@ function MainApp() {
         {activePage === 'home' && (
           <HomePage
             setActivePage={setActivePage}
-            onSelectDoctorForBooking={handleSelectDoctorForBooking}
-            onOpenBookingModal={handleOpenBookingModal}
             onSelectDepartment={handleSelectDepartment}
             onOpenQrModal={() => setQrModalOpen(true)}
           />
@@ -264,24 +239,14 @@ function MainApp() {
         {activePage === 'doctors' && (
           <DoctorsPage
             setActivePage={setActivePage}
-            onSelectDoctorForBooking={handleSelectDoctorForBooking}
-            onOpenBookingModal={handleOpenBookingModal}
             onOpenQrModal={() => setQrModalOpen(true)}
           />
         )}
         {activePage === 'departments' && (
           <DepartmentsPage
             setActivePage={setActivePage}
-            onSelectDoctorForBooking={handleSelectDoctorForBooking}
-            onOpenBookingModal={handleOpenBookingModal}
             onOpenQrModal={() => setQrModalOpen(true)}
             initialDepartmentId={selectedDepartmentId}
-          />
-        )}
-        {activePage === 'booking' && (
-          <AppointmentBookingPage
-            initialDoctor={selectedDoctorForBooking}
-            setActivePage={setActivePage}
           />
         )}
         {activePage === 'contact' && <ContactPage setActivePage={setActivePage} />}
@@ -295,22 +260,6 @@ function MainApp() {
         activePage={activePage}
         setActivePage={setActivePage}
         onOpenQrModal={() => setQrModalOpen(true)}
-        onOpenBookingModal={() => handleOpenBookingModal()}
-      />
-
-      {/* Quick Booking Form Modal */}
-      <AppointmentBookingModal
-        isOpen={bookingModalOpen}
-        onClose={() => setBookingModalOpen(false)}
-        selectedDoctor={bookingModalDoctor}
-        onSuccess={handleBookingSuccess}
-      />
-
-      {/* Confirmation Slip Voucher Modal */}
-      <AppointmentSlipModal
-        isOpen={slipModalOpen}
-        onClose={() => setSlipModalOpen(false)}
-        appointment={confirmedSlip}
       />
 
       {/* Fast QR Patient Registration Modal */}

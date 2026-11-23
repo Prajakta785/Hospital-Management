@@ -17,8 +17,6 @@ import {
 
 export function DepartmentsPage({
   setActivePage,
-  onSelectDoctorForBooking,
-  onOpenBookingModal,
   onOpenQrModal,
   initialDepartmentId = null
 }) {
