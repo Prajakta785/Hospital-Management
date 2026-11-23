@@ -42,6 +42,7 @@ import {
   AlertCircle,
   Printer,
   Wifi,
+  Globe,
   QrCode,
   Smartphone,
   Copy,
@@ -182,8 +183,11 @@ export function SuperAdminDashboard({ setActivePage }) {
       .catch(() => {});
   }, []);
 
+  const CLOUD_QR_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
+  const [adminQrMode, setAdminQrMode] = useState('cloud'); // 'cloud' (recommended) | 'local'
+
   useEffect(() => {
-    const url = `http://${networkIp}:5173/register-qr`;
+    const url = adminQrMode === 'cloud' ? CLOUD_QR_URL : `http://${networkIp}:5173/register-qr`;
     QRCode.toDataURL(url, {
       width: 280,
       margin: 4,
@@ -192,7 +196,7 @@ export function SuperAdminDashboard({ setActivePage }) {
     })
       .then(url => setAdminQrDataUrl(url))
       .catch(() => {});
-  }, [networkIp]);
+  }, [networkIp, adminQrMode]);
 
   const handleSaveNetworkIp = async (e) => {
     e.preventDefault();
@@ -1754,18 +1758,47 @@ export function SuperAdminDashboard({ setActivePage }) {
                     <p className="text-xs text-slate-300">
                       Configure the exact Wi-Fi LAN IP or domain encoded in the hospital patient registration QR code.
                     </p>
+                    {/* Mode Toggle inside Super Admin */}
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setAdminQrMode('cloud')}
+                        className={`text-[10px] px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-all ${
+                          adminQrMode === 'cloud'
+                            ? 'bg-emerald-500 text-slate-950 font-black shadow-xs'
+                            : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        }`}
+                      >
+                        <Globe className="w-3 h-3" />
+                        <span>Cloud (Any Phone)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdminQrMode('local')}
+                        className={`text-[10px] px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-all ${
+                          adminQrMode === 'local'
+                            ? 'bg-emerald-500 text-slate-950 font-black shadow-xs'
+                            : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        }`}
+                      >
+                        <Wifi className="w-3 h-3" />
+                        <span>Local Wi-Fi</span>
+                      </button>
+                    </div>
+
                     <div className="pt-1 flex items-center gap-2">
-                      <span className="text-[11px] text-emerald-300 font-mono font-semibold">
-                        http://{networkIp}:5173/register-qr
+                      <span className="text-[11px] text-emerald-300 font-mono font-semibold truncate max-w-xs">
+                        {adminQrMode === 'cloud' ? CLOUD_QR_URL : `http://${networkIp}:5173/register-qr`}
                       </span>
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(`http://${networkIp}:5173/register-qr`);
+                          const target = adminQrMode === 'cloud' ? CLOUD_QR_URL : `http://${networkIp}:5173/register-qr`;
+                          navigator.clipboard.writeText(target);
                           setCopiedQrLink(true);
                           setTimeout(() => setCopiedQrLink(false), 2000);
                         }}
-                        className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                       >
                         {copiedQrLink ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                         <span>{copiedQrLink ? 'Copied' : 'Copy'}</span>

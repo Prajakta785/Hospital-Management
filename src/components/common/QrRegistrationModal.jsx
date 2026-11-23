@@ -9,6 +9,7 @@ import {
   Smartphone,
   ShieldCheck,
   Wifi,
+  Globe,
   ExternalLink,
   ArrowRight,
   Info
@@ -17,14 +18,17 @@ import {
 export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [qrMode, setQrMode] = useState('cloud'); // 'cloud' (recommended, works anywhere) | 'local' (same Wi-Fi)
   const [networkIp, setNetworkIp] = useState(() => {
     try {
       const saved = localStorage.getItem('apexcare_custom_lan_ip');
-      return (saved && saved !== '192.168.1.30') ? saved : '192.168.1.37';
+      return (saved && saved !== '192.168.1.30') ? saved : '192.168.1.40';
     } catch {
-      return '192.168.1.37';
+      return '192.168.1.40';
     }
   });
+
+  const CLOUD_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
 
   // Fetch local LAN IP configured by Super Admin from backend
   useEffect(() => {
@@ -41,8 +45,15 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
       .catch(() => {});
   }, [isOpen]);
 
-  // Compute scannable URL
+  // Compute scannable URL: Cloud URL works on ANY phone with Mobile Data or Wi-Fi
   const getScannableUrl = () => {
+    if (qrMode === 'cloud') {
+      if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
+        return `${window.location.origin}/register-qr`;
+      }
+      return CLOUD_URL;
+    }
+
     if (typeof window === 'undefined') return `http://${networkIp}:5173/register-qr`;
 
     const hostname = window.location.hostname;
@@ -115,6 +126,34 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
 
         {/* Body */}
         <div className="p-5 sm:p-6 text-center">
+
+          {/* Mode Selector Tabs: Cloud (Any Phone) vs Local Wi-Fi */}
+          <div className="flex items-center justify-center gap-1 p-1 mb-3 bg-slate-100 rounded-xl max-w-xs mx-auto">
+            <button
+              type="button"
+              onClick={() => setQrMode('cloud')}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                qrMode === 'cloud'
+                  ? 'bg-[#059669] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5 shrink-0" />
+              <span>🌐 Cloud (Any Phone)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setQrMode('local')}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                qrMode === 'local'
+                  ? 'bg-[#059669] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Wifi className="w-3.5 h-3.5 shrink-0" />
+              <span>📶 Local Wi-Fi</span>
+            </button>
+          </div>
           
           {/* iOS / Android Camera Compatible QR Box */}
           <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-3">
@@ -134,7 +173,9 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
           {/* Form URL Direct Link */}
           <div className="mb-3 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2 text-left">
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">QR Registration Link:</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                {qrMode === 'cloud' ? '🌐 Live Cloud Link (Opens on Any Phone):' : '📶 Local Wi-Fi Link (Same Network):'}
+              </span>
               <a
                 href={registrationUrl}
                 target="_blank"

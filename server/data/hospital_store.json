@@ -1463,6 +1463,17 @@
   ],
   "notifications": [
     {
+      "id": 2,
+      "patient_id": null,
+      "type": "whatsapp",
+      "title": "New Website Inquiry (TCK-2026-9596)",
+      "message": "From Pankaj Pawar  (5789654789) regarding General Inquiries: \"vbnmghjjfdsyuewgfhdsj\"",
+      "phone": "+1 (800) 273-9227",
+      "status": "delivered",
+      "timestamp": "2026-11-23T06:08:38.165Z",
+      "created_at": "2026-11-23T06:08:38.165Z"
+    },
+    {
       "id": 1,
       "patient_id": null,
       "type": "whatsapp",
@@ -1475,6 +1486,54 @@
     }
   ],
   "audit_logs": [
+    {
+      "id": 41,
+      "user_id": 5,
+      "user_name": "Sarah Jenkins, RN",
+      "role": "nurse",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "5",
+      "details": "Sarah Jenkins, RN logged into nurse panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T07:19:51.139Z"
+    },
+    {
+      "id": 40,
+      "user_id": 2,
+      "user_name": "Dr. Neha Kapoor",
+      "role": "doctor",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "2",
+      "details": "Dr. Neha Kapoor logged into doctor panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T07:19:14.003Z"
+    },
+    {
+      "id": 39,
+      "user_id": 1,
+      "user_name": "Dr. Marcus Vance",
+      "role": "superadmin",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "1",
+      "details": "Dr. Marcus Vance logged into superadmin panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T06:08:48.163Z"
+    },
+    {
+      "id": 38,
+      "user_id": null,
+      "user_name": "Pankaj Pawar ",
+      "role": "guest",
+      "action": "WEBSITE_CONTACT_SUBMISSION",
+      "entity_type": "SupportTicket",
+      "entity_id": "TCK-2026-9596",
+      "details": "Inquiry submitted for General Inquiries department.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T06:08:38.167Z"
+    },
     {
       "id": 37,
       "user_id": 1,
@@ -1936,6 +1995,18 @@
     "ambulance_hotline": "911 / SpeedDial #119"
   },
   "support_messages": [
+    {
+      "id": 2,
+      "ticket_id": "TCK-2026-9596",
+      "name": "Pankaj Pawar",
+      "email": "pankaj@gmail.com",
+      "phone": "5789654789",
+      "department": "General Inquiries",
+      "subject": "erty",
+      "message": "vbnmghjjfdsyuewgfhdsj",
+      "status": "new",
+      "created_at": "2026-11-23T06:08:38.163Z"
+    },
     {
       "id": 1,
       "ticket_id": "TCK-2026-4727",
