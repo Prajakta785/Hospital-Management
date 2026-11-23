@@ -183,7 +183,7 @@ function MainApp() {
   if (activePage === 'register-qr' || activePage === 'qr_registration') {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50">
-        <QrRegistrationPage setActivePage={setActivePage} />
+        <QrRegistrationPage key={typeof window !== 'undefined' ? (window.location.search || 'qr-page') : 'qr-page'} setActivePage={setActivePage} />
       </div>
     );
   }

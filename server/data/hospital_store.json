@@ -339,6 +339,24 @@
   ],
   "patients": [
     {
+      "id": 4,
+      "mrn": "PAT-2026-3181",
+      "first_name": "Adinath",
+      "last_name": "Powar",
+      "age": 23,
+      "dob": "1995-01-01",
+      "gender": "Male",
+      "blood_group": "B+",
+      "phone": "8421945132",
+      "email": "adinathp148@gmail.com",
+      "address": "Mahagaon",
+      "allergies": "None recorded",
+      "medical_history": "Allergic to penicillin",
+      "insurance_provider": "Self-Pay",
+      "admission_status": "outpatient",
+      "created_at": "2026-11-23T10:38:03.973Z"
+    },
+    {
       "id": 3,
       "mrn": "PAT-2026-1413",
       "first_name": "Prajwal",
@@ -1523,6 +1541,18 @@
   ],
   "audit_logs": [
     {
+      "id": 52,
+      "user_id": 5,
+      "user_name": "Sarah Jenkins, RN",
+      "role": "nurse",
+      "action": "PANEL_LOGIN_SUCCESS",
+      "entity_type": "Auth",
+      "entity_id": "5",
+      "details": "Sarah Jenkins, RN logged into nurse panel successfully.",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-23T10:41:29.765Z"
+    },
+    {
       "id": 51,
       "user_id": 5,
       "user_name": "Sarah Jenkins, RN",
@@ -2226,6 +2256,34 @@
     }
   ],
   "patient_registrations": [
+    {
+      "id": 5,
+      "patient_id": "PAT-2026-3181",
+      "name": "Adinath Powar",
+      "age": 23,
+      "dob": "1995-01-01",
+      "gender": "Male",
+      "phone": "8421945132",
+      "whatsapp_number": "+918421945132",
+      "whatsapp_consent": true,
+      "email": "adinathp148@gmail.com",
+      "address": "Mahagaon",
+      "blood_group": "B+",
+      "symptoms": "Fever",
+      "medical_history": "Allergic to penicillin",
+      "emergency_contact": {
+        "name": "",
+        "phone": ""
+      },
+      "status": "Pending",
+      "assigned_doctor_id": null,
+      "assigned_doctor_name": null,
+      "assigned_nurse_id": null,
+      "assigned_nurse_name": null,
+      "nurse_notes": "",
+      "registered_at": "2026-11-23T10:38:03.973Z",
+      "created_at": "2026-11-23T10:38:03.974Z"
+    },
     {
       "id": 4,
       "patient_id": "PAT-2026-5170",

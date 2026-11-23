@@ -12,13 +12,15 @@ import {
   Globe,
   ExternalLink,
   ArrowRight,
-  Info
+  Info,
+  RefreshCw
 } from 'lucide-react';
 
 export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [qrMode, setQrMode] = useState('cloud'); // 'cloud' (recommended, works anywhere) | 'local' (same Wi-Fi)
+  const [qrTimestamp, setQrTimestamp] = useState(() => Date.now());
   const [networkIp, setNetworkIp] = useState(() => {
     try {
       const saved = localStorage.getItem('apexcare_custom_lan_ip');
@@ -29,6 +31,15 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   });
 
   const CLOUD_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
+
+  // Automatically refresh QR code every 25 seconds so multiple mobile scans never get suppressed by Android/iOS cameras
+  useEffect(() => {
+    if (!isOpen) return;
+    const interval = setInterval(() => {
+      setQrTimestamp(Date.now());
+    }, 25000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   // Fetch local LAN IP configured by Super Admin from backend
   useEffect(() => {
@@ -46,24 +57,30 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   }, [isOpen]);
 
   // Compute scannable URL: Cloud URL works on ANY phone with Mobile Data or Wi-Fi
+  // Adding ?scan=${qrTimestamp} guarantees each scan opens a fresh new form and mobile cameras trigger instantly
   const getScannableUrl = () => {
+    let baseUrl = CLOUD_URL;
     if (qrMode === 'cloud') {
       if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-        return `${window.location.origin}/register-qr`;
+        baseUrl = `${window.location.origin}/register-qr`;
+      } else {
+        baseUrl = CLOUD_URL;
       }
-      return CLOUD_URL;
+    } else {
+      if (typeof window === 'undefined') {
+        baseUrl = `http://${networkIp}:5173/register-qr`;
+      } else {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          const port = window.location.port || '5173';
+          baseUrl = `http://${networkIp}:${port}/register-qr`;
+        } else {
+          baseUrl = `${window.location.origin}/register-qr`;
+        }
+      }
     }
 
-    if (typeof window === 'undefined') return `http://${networkIp}:5173/register-qr`;
-
-    const hostname = window.location.hostname;
-    // If running on localhost or 127.0.0.1, mobile cannot reach localhost, so use local Wi-Fi IP
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      const port = window.location.port || '5173';
-      return `http://${networkIp}:${port}/register-qr`;
-    }
-
-    return `${window.location.origin}/register-qr`;
+    return `${baseUrl}?scan=${qrTimestamp}`;
   };
 
   const registrationUrl = getScannableUrl();
@@ -156,7 +173,7 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
           </div>
           
           {/* iOS / Android Camera Compatible QR Box */}
-          <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-3">
+          <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-2">
             {qrDataUrl ? (
               <img
                 src={qrDataUrl}
@@ -168,6 +185,23 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
                 <div className="w-8 h-8 border-2 border-[#059669] border-t-transparent rounded-full animate-spin" />
               </div>
             )}
+          </div>
+
+          {/* Dynamic Refresh Bar for Multi-Scan phones */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => setQrTimestamp(Date.now())}
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200 transition-all cursor-pointer"
+              title="पुन्हा स्कॅन करण्यासाठी नवीन कोड तयार करा"
+            >
+              <RefreshCw className="w-3 h-3 text-emerald-600" />
+              <span>पुन्हा स्कॅन करा (Refresh for Re-Scan)</span>
+            </button>
+            <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Auto-Live 25s
+            </span>
           </div>
 
           {/* Form URL Direct Link */}

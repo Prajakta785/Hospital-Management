@@ -90,6 +90,28 @@ export function QrRegistrationPage({ setActivePage }) {
   const [error, setError] = useState(null);
   const [registeredPatient, setRegisteredPatient] = useState(null);
 
+  // When a patient scans again or opens a fresh registration session, reset all states
+  React.useEffect(() => {
+    setRegisteredPatient(null);
+    setFormData({
+      patient_id: '',
+      name: '',
+      age: '',
+      dob: '',
+      gender: 'Male',
+      phone: '',
+      email: '',
+      address: '',
+      blood_group: 'O+',
+      symptoms: '',
+      medical_history: '',
+      emergency_contact: '',
+      whatsapp_enabled: true
+    });
+    setActiveTab('new');
+    setError(null);
+  }, []);
+
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const genders = ['Male', 'Female', 'Other'];
 
@@ -428,6 +450,39 @@ export function QrRegistrationPage({ setActivePage }) {
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
+              {/* Quick Multi-Patient Switcher */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <span className="text-xs font-bold text-emerald-950">
+                  पुढच्या पेशंटची नोंदणी करायची आहे का? (Register Next Patient?)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRegisteredPatient(null);
+                    setFormData({
+                      patient_id: '',
+                      name: '',
+                      age: '',
+                      dob: '',
+                      gender: 'Male',
+                      phone: '',
+                      email: '',
+                      address: '',
+                      blood_group: 'O+',
+                      symptoms: '',
+                      medical_history: '',
+                      emergency_contact: '',
+                      whatsapp_enabled: true
+                    });
+                    setActiveTab('new');
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white rounded-lg text-xs font-black shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>नवीन फॉर्म उघडा (New Form)</span>
+                </button>
+              </div>
+
               {/* Highlight Card */}
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-5 rounded-2xl border border-emerald-200/80 text-center">
                 <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Assigned Patient ID</span>
