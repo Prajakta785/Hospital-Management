@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { workflowApi, contactApi } from '../../services/api.js';
 import { PrescriptionSlipModal } from '../../components/common/PrescriptionSlipModal.jsx';
+import { CustomSelect } from '../../components/common/CustomSelect.jsx';
 import {
   ShieldAlert,
   Users,
@@ -49,6 +50,27 @@ import {
   Mail,
   Send
 } from 'lucide-react';
+
+const assignmentShiftOptions = [
+  { value: 'Morning (08:00 AM - 04:00 PM)', label: 'Morning Shift', sublabel: '08:00 AM - 04:00 PM' },
+  { value: 'Evening (04:00 PM - 12:00 AM)', label: 'Evening Shift', sublabel: '04:00 PM - 12:00 AM' },
+  { value: 'Night (12:00 AM - 08:00 AM)', label: 'Night Shift', sublabel: '12:00 AM - 08:00 AM' },
+  { value: 'Full-Day OPD Clinic', label: 'Full-Day OPD Clinic', sublabel: 'All-Day OPD Coverage' }
+];
+
+const clinicalDutyRoleOptions = [
+  { value: 'Primary Clinical Assistant & Triage', label: 'Primary Assistant & Triage', sublabel: 'Patient triage & vitals' },
+  { value: 'Consultation & Patient Prep Specialist', label: 'Consultation & Patient Prep', sublabel: 'Doctor examination assistance' },
+  { value: 'Pre-Op & Post-Op Care Coordinator', label: 'Pre-Op & Post-Op Coordinator', sublabel: 'Recovery & surgical care' },
+  { value: 'Medication & Vital Signs Monitor', label: 'Medication & Vitals Monitor', sublabel: 'Dosing & monitoring charts' },
+  { value: 'General OPD Clinical Aide', label: 'General OPD Clinical Aide', sublabel: 'OPD floor support' }
+];
+
+const nurseShiftOptions = [
+  { value: 'Morning', label: 'Morning Shift', sublabel: '08:00 AM - 04:00 PM' },
+  { value: 'Evening', label: 'Evening Shift', sublabel: '04:00 PM - 12:00 AM' },
+  { value: 'Night', label: 'Night Shift', sublabel: '12:00 AM - 08:00 AM' }
+];
 
 export function SuperAdminDashboard({ setActivePage }) {
   // Mobile Sidebar State
@@ -2278,17 +2300,14 @@ export function SuperAdminDashboard({ setActivePage }) {
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   />
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Shift</label>
-                  <select
+                <div className="min-w-0">
+                  <CustomSelect
+                    label="Shift"
                     value={nurseFormData.shift}
-                    onChange={(e) => setNurseFormData({ ...nurseFormData, shift: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
-                  >
-                    <option value="Morning">Morning Shift</option>
-                    <option value="Evening">Evening Shift</option>
-                    <option value="Night">Night Shift</option>
-                  </select>
+                    onChange={(val) => setNurseFormData({ ...nurseFormData, shift: val })}
+                    options={nurseShiftOptions}
+                    searchable={false}
+                  />
                 </div>
               </div>
 
@@ -2724,45 +2743,38 @@ export function SuperAdminDashboard({ setActivePage }) {
 
               {/* 3. SHIFT & ROOM (Stacked on mobile, 2 cols on desktop) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Duty Shift *</label>
-                  <select
+                <div className="min-w-0">
+                  <CustomSelect
+                    label="Duty Shift"
+                    required
                     value={assignmentFormData.shift}
-                    onChange={(e) => setAssignmentFormData({ ...assignmentFormData, shift: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-sky-600"
-                  >
-                    <option value="Morning (08:00 AM - 04:00 PM)">Morning (08:00 AM - 04:00 PM)</option>
-                    <option value="Evening (04:00 PM - 12:00 AM)">Evening (04:00 PM - 12:00 AM)</option>
-                    <option value="Night (12:00 AM - 08:00 AM)">Night (12:00 AM - 08:00 AM)</option>
-                    <option value="Full-Day OPD Clinic">Full-Day OPD Clinic</option>
-                  </select>
+                    onChange={(val) => setAssignmentFormData({ ...assignmentFormData, shift: val })}
+                    options={assignmentShiftOptions}
+                    searchable={false}
+                  />
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Clinic Room / Station</label>
+                <div className="min-w-0">
+                  <label className="block font-bold text-slate-700 uppercase mb-1 text-[11px]">Clinic Room / Station</label>
                   <input
                     type="text"
                     value={assignmentFormData.roomOrWard}
                     onChange={(e) => setAssignmentFormData({ ...assignmentFormData, roomOrWard: e.target.value })}
                     placeholder="e.g. Suite 415 / Neuro OPD"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-sky-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#059669]"
                   />
                 </div>
               </div>
 
               {/* 4. DUTY ROLE */}
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Clinical Duty Role *</label>
-                <select
+              <div className="min-w-0">
+                <CustomSelect
+                  label="Clinical Duty Role"
+                  required
                   value={assignmentFormData.dutyRole}
-                  onChange={(e) => setAssignmentFormData({ ...assignmentFormData, dutyRole: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-sky-600"
-                >
-                  <option value="Primary Clinical Assistant & Triage">Primary Clinical Assistant &amp; Triage</option>
-                  <option value="Consultation & Patient Prep Specialist">Consultation &amp; Patient Prep Specialist</option>
-                  <option value="Pre-Op & Post-Op Care Coordinator">Pre-Op &amp; Post-Op Care Coordinator</option>
-                  <option value="Medication & Vital Signs Monitor">Medication &amp; Vital Signs Monitor</option>
-                  <option value="General OPD Clinical Aide">General OPD Clinical Aide</option>
-                </select>
+                  onChange={(val) => setAssignmentFormData({ ...assignmentFormData, dutyRole: val })}
+                  options={clinicalDutyRoleOptions}
+                  searchable={false}
+                />
               </div>
 
               {/* 5. NOTES */}
@@ -2835,21 +2847,20 @@ export function SuperAdminDashboard({ setActivePage }) {
                 </p>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Select Available Doctor *</label>
-                <select
+              <div className="min-w-0">
+                <CustomSelect
+                  label="Select Available Doctor"
                   required
+                  placeholder="-- Choose Doctor --"
                   value={patientAssignDoctorId}
-                  onChange={(e) => setPatientAssignDoctorId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                >
-                  <option value="">-- Choose Doctor --</option>
-                  {doctors.map(d => (
-                    <option key={d.id} value={d.doctor_id || d.id}>
-                      {d.name} ({d.specialty}) • {d.room_number || 'OPD Suite'}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setPatientAssignDoctorId(val)}
+                  options={doctors.map(d => ({
+                    value: String(d.doctor_id || d.id),
+                    label: d.name,
+                    sublabel: `${d.specialty} • ${d.room_number || 'OPD Suite'}`
+                  }))}
+                  searchable={true}
+                />
               </div>
 
               <div>

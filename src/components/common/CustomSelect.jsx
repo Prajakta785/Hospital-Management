@@ -65,7 +65,7 @@ export function CustomSelect({
   };
 
   return (
-    <div className={`relative ${className || 'w-full'}`} ref={dropdownRef}>
+    <div className={`relative ${className || 'w-full'} ${isOpen ? 'z-30' : 'z-10'}`} ref={dropdownRef}>
       {label && (
         <label className="block font-bold text-slate-700 uppercase mb-1 text-[11px]">
           {label} {required && <span className="text-rose-500">*</span>}

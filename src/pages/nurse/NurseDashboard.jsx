@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { workflowApi } from '../../services/api.js';
 import { PrescriptionSlipModal } from '../../components/common/PrescriptionSlipModal.jsx';
 import { HospitalStaffLoginPortal } from '../../components/common/HospitalStaffLoginPortal.jsx';
+import { CustomSelect } from '../../components/common/CustomSelect.jsx';
 import {
   HeartHandshake,
   ShieldAlert,
@@ -36,6 +37,12 @@ import {
   Printer,
   Mail
 } from 'lucide-react';
+
+const triagePriorityOptions = [
+  { value: 'Routine', label: 'Routine OPD', sublabel: 'Standard Queue' },
+  { value: 'Urgent', label: 'Urgent / High Pain', sublabel: 'Elevated Priority' },
+  { value: 'Emergency', label: 'Immediate Priority', sublabel: 'Emergency Attention' }
+];
 
 // Helper function to format Registration Date & Time in clear localized format
 const formatDateTime = (val) => {
@@ -1104,41 +1111,38 @@ export function NurseDashboard({ setActivePage }) {
             </div>
 
             <form onSubmit={handleSubmitAssignment} className="p-6 space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Select Doctor (Department & Specialization) *
-                </label>
-                <select
+              <div className="min-w-0">
+                <CustomSelect
+                  label="Select Doctor (Department & Specialization)"
                   required
+                  placeholder="-- Choose Available Specialist --"
                   value={assignDoctorId}
-                  onChange={(e) => setAssignDoctorId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-                >
-                  <option value="">-- Choose Available Specialist --</option>
-                  {myAssignment && (
-                    <option value={myAssignment.doctor_numeric_id || myAssignment.doctor_id} className="font-bold bg-amber-50 text-slate-950">
-                      ⭐ [Assigned Supervising Doctor] {myAssignment.doctor_name} — {myAssignment.doctor_specialty}
-                    </option>
-                  )}
-                  {doctors.map(doc => (
-                    <option key={doc.id} value={doc.id}>
-                      {doc.name} — {doc.specialty} ({doc.qualifications || 'MD'})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setAssignDoctorId(val)}
+                  options={[
+                    ...(myAssignment ? [{
+                      value: String(myAssignment.doctor_numeric_id || myAssignment.doctor_id),
+                      label: `⭐ ${myAssignment.doctor_name}`,
+                      sublabel: `Assigned Doctor • ${myAssignment.doctor_specialty}`
+                    }] : []),
+                    ...doctors.map(doc => ({
+                      value: String(doc.id),
+                      label: doc.name,
+                      sublabel: `${doc.specialty} (${doc.qualifications || 'MD'})`
+                    }))
+                  ]}
+                  searchable={true}
+                />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Triage Priority</label>
-                <select
+              <div className="min-w-0">
+                <CustomSelect
+                  label="Triage Priority"
+                  required
                   value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-                >
-                  <option value="Routine">Routine OPD</option>
-                  <option value="Urgent">Urgent / High Pain</option>
-                  <option value="Emergency">Immediate Priority</option>
-                </select>
+                  onChange={(val) => setPriority(val)}
+                  options={triagePriorityOptions}
+                  searchable={false}
+                />
               </div>
 
               <div>
