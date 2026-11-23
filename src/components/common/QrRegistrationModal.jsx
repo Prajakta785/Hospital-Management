@@ -12,43 +12,20 @@ import {
   Globe,
   ExternalLink,
   ArrowRight,
-  Info,
-  RefreshCw
+  Info
 } from 'lucide-react';
 
 export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
-  const [qrTimestamp, setQrTimestamp] = useState(() => Date.now());
 
-  const CLOUD_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
-
-  // Automatically refresh QR code every 25 seconds so multiple mobile scans never get suppressed by Android/iOS cameras
-  useEffect(() => {
-    if (!isOpen) return;
-    const interval = setInterval(() => {
-      setQrTimestamp(Date.now());
-    }, 25000);
-    return () => clearInterval(interval);
-  }, [isOpen]);
-
-  // Scannable URL: Universal Cloud URL works on ANY phone with Mobile Data or Wi-Fi
-  // Adding ?scan=${qrTimestamp} guarantees each scan opens a fresh new form and mobile cameras trigger instantly
-  const getScannableUrl = () => {
-    let baseUrl = CLOUD_URL;
-    if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-      baseUrl = `${window.location.origin}/register-qr`;
-    }
-    return `${baseUrl}?scan=${qrTimestamp}`;
-  };
-
-  const registrationUrl = getScannableUrl();
+  // Permanent, fixed, static Cloud URL - Never changes, ideal for printing and posters
+  const registrationUrl = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // Generate iOS Vision / Apple Camera & Android fully compatible QR Code
-    // Margin 4 is the Apple Vision specification quiet zone standard
+    // Generate iOS Vision / Apple Camera & Android fully compatible permanent static QR Code
     QRCode.toDataURL(registrationUrl, {
       width: 360,
       margin: 4,
@@ -60,7 +37,7 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
     })
       .then(url => setQrDataUrl(url))
       .catch(err => console.error('Failed to generate QR Code:', err));
-  }, [isOpen, registrationUrl]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -104,7 +81,7 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
         <div className="p-5 sm:p-6 text-center">
           
           {/* iOS / Android Camera Compatible QR Box */}
-          <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-2">
+          <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-3">
             {qrDataUrl ? (
               <img
                 src={qrDataUrl}
@@ -116,23 +93,6 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
                 <div className="w-8 h-8 border-2 border-[#059669] border-t-transparent rounded-full animate-spin" />
               </div>
             )}
-          </div>
-
-          {/* Dynamic Refresh Bar for Multi-Scan phones */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <button
-              type="button"
-              onClick={() => setQrTimestamp(Date.now())}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200 transition-all cursor-pointer"
-              title="पुन्हा स्कॅन करण्यासाठी नवीन कोड तयार करा"
-            >
-              <RefreshCw className="w-3 h-3 text-emerald-600" />
-              <span>पुन्हा स्कॅन करा (Refresh for Re-Scan)</span>
-            </button>
-            <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Auto-Live 25s
-            </span>
           </div>
 
           {/* Form URL Direct Link */}

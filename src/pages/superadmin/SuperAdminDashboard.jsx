@@ -184,19 +184,10 @@ export function SuperAdminDashboard({ setActivePage }) {
   }, []);
 
   const CLOUD_QR_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
-  const [adminQrTimestamp, setAdminQrTimestamp] = useState(() => Date.now());
 
-  // Auto-refresh Super Admin QR code every 25s so re-scans on the same phone never get suppressed
+  // Permanent, fixed, static Cloud QR code - Never changes, ideal for printing and physical posters
   useEffect(() => {
-    const interval = setInterval(() => {
-      setAdminQrTimestamp(Date.now());
-    }, 25000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const url = `${CLOUD_QR_URL}?scan=${adminQrTimestamp}`;
-    QRCode.toDataURL(url, {
+    QRCode.toDataURL(CLOUD_QR_URL, {
       width: 280,
       margin: 4,
       errorCorrectionLevel: 'M',
@@ -204,7 +195,7 @@ export function SuperAdminDashboard({ setActivePage }) {
     })
       .then(url => setAdminQrDataUrl(url))
       .catch(() => {});
-  }, [adminQrTimestamp]);
+  }, []);
 
   const handleSaveNetworkIp = async (e) => {
     e.preventDefault();
@@ -1765,25 +1756,14 @@ export function SuperAdminDashboard({ setActivePage }) {
                 
                 {/* QR Preview & Live Info */}
                 <div className="flex items-center gap-4">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="p-2 bg-white rounded-xl shadow-xs shrink-0">
-                      {adminQrDataUrl ? (
-                        <img src={adminQrDataUrl} alt="Patient QR Code" className="w-24 h-24 rounded-lg" />
-                      ) : (
-                        <div className="w-24 h-24 flex items-center justify-center text-slate-400">
-                          <QrCode className="w-8 h-8 text-emerald-600 animate-pulse" />
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setAdminQrTimestamp(Date.now())}
-                      className="text-[9px] font-bold text-emerald-300 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Generate fresh QR pattern for re-scanning"
-                    >
-                      <RefreshCw className="w-2.5 h-2.5" />
-                      <span>Re-Scan Code</span>
-                    </button>
+                  <div className="p-2 bg-white rounded-xl shadow-xs shrink-0">
+                    {adminQrDataUrl ? (
+                      <img src={adminQrDataUrl} alt="Patient QR Code" className="w-24 h-24 rounded-lg" />
+                    ) : (
+                      <div className="w-24 h-24 flex items-center justify-center text-slate-400">
+                        <QrCode className="w-8 h-8 text-emerald-600 animate-pulse" />
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
