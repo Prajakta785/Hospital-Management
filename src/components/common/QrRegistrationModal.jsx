@@ -8,30 +8,27 @@ import {
   Download,
   Smartphone,
   ShieldCheck,
-  Wifi,
   Globe,
-  ExternalLink,
-  ArrowRight,
-  Info
+  ArrowRight
 } from 'lucide-react';
 
 export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Permanent, fixed, static Cloud URL - Never changes, ideal for printing and posters
+  // Permanent, fixed, static Cloud URL - Works universally on any mobile phone (Mobile Data Jio/Airtel or Wi-Fi)
   const registrationUrl = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
 
+  // Generate iOS Vision / Apple Camera & Android fully compatible permanent QR Code
   useEffect(() => {
     if (!isOpen) return;
 
-    // Generate iOS Vision / Apple Camera & Android fully compatible permanent static QR Code
     QRCode.toDataURL(registrationUrl, {
       width: 360,
       margin: 4,
       errorCorrectionLevel: 'M',
       color: {
-        dark: '#000000', // Pure optical black for instant iOS Camera detection
+        dark: '#000000', // Pure optical black for instant iOS / Android Camera detection
         light: '#ffffff'
       }
     })
@@ -80,6 +77,11 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
         {/* Body */}
         <div className="p-5 sm:p-6 text-center">
           
+          <div className="mb-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <Globe className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Universal Cloud QR (Android &amp; iOS Ready)</span>
+          </div>
+          
           {/* iOS / Android Camera Compatible QR Box */}
           <div className="inline-block p-2 bg-white rounded-2xl border-2 border-emerald-200 shadow-md mb-3">
             {qrDataUrl ? (
@@ -96,10 +98,10 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
           </div>
 
           {/* Form URL Direct Link */}
-          <div className="mb-3 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2 text-left">
+          <div className="mb-3 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2 text-left">
             <div className="min-w-0 flex-1">
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                🌐 Live Patient Registration Link (Universal Cloud Access):
+                🌐 Live Cloud Registration Link:
               </span>
               <a
                 href={registrationUrl}
@@ -158,11 +160,12 @@ export function QrRegistrationModal({ isOpen, onClose, onOpenDirectForm }) {
         <div className="bg-slate-50 px-6 py-2.5 border-t border-slate-100 flex items-center justify-center text-[11px] text-slate-500">
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
-            iOS 12-18 &amp; Android Compatible
+            iOS 12-18 &amp; Android Compatible • Instant Camera Scan
           </span>
         </div>
       </div>
     </div>
   );
 }
+
 export default QrRegistrationModal;

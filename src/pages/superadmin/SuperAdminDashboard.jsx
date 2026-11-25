@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { workflowApi, contactApi } from '../../services/api.js';
 import { PrescriptionSlipModal } from '../../components/common/PrescriptionSlipModal.jsx';
 import { CustomSelect } from '../../components/common/CustomSelect.jsx';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon.jsx';
 import {
   ShieldAlert,
   Users,
@@ -185,7 +186,7 @@ export function SuperAdminDashboard({ setActivePage }) {
 
   const CLOUD_QR_URL = 'https://hospital-management-system-swart-nu.vercel.app/register-qr';
 
-  // Permanent, fixed, static Cloud QR code - Never changes, ideal for printing and physical posters
+  // Dynamic QR code generation for Universal Cloud URL (iOS & Android)
   useEffect(() => {
     QRCode.toDataURL(CLOUD_QR_URL, {
       width: 280,
@@ -1002,7 +1003,7 @@ export function SuperAdminDashboard({ setActivePage }) {
             </span>
             <div className="space-y-1">
               {[
-                { id: 'whatsapp', label: 'WhatsApp Dispatch Logs', count: (whatsappLogs || []).length, icon: MessageSquare, badgeColor: 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/30' },
+                { id: 'whatsapp', label: 'WhatsApp Dispatch Logs', count: (whatsappLogs || []).length, icon: WhatsAppIcon, badgeColor: 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/30' },
                 { id: 'inquiries', label: 'Website Inquiries & Contact', count: (supportMessages || []).length, icon: Mail, badgeColor: 'bg-amber-500/20 text-amber-200 border border-amber-400/30' }
               ].map(item => {
                 const Icon = item.icon;
@@ -1236,7 +1237,7 @@ export function SuperAdminDashboard({ setActivePage }) {
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">WhatsApp Delivery</span>
                   <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 stat-icon-bounce">
-                    <MessageSquare className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4 fill-emerald-600" />
                   </div>
                 </div>
                 <div className="text-2xl font-black text-slate-900 my-1">
@@ -1766,9 +1767,15 @@ export function SuperAdminDashboard({ setActivePage }) {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
-                      <ShieldAlert className="w-3 h-3" /> Live Patient QR Station
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
+                        <ShieldAlert className="w-3 h-3" /> Live Patient QR Station
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white">
+                        <Globe className="w-3 h-3" /> Universal Cloud Link
+                      </span>
+                    </div>
+
                     <h3 className="text-base font-extrabold text-white">Universal Patient Registration QR Code</h3>
                     <p className="text-xs text-slate-300">
                       Live Cloud QR Code — Works universally on all Android and iOS phones via Mobile Data (Jio/Airtel/Vi) or Wi-Fi.
@@ -2069,9 +2076,10 @@ export function SuperAdminDashboard({ setActivePage }) {
                               href={log.intent_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="px-2.5 py-1 rounded bg-sky-50 text-sky-800 font-bold hover:bg-sky-100 transition-colors border border-sky-200"
+                              className="px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-100 transition-colors border border-emerald-200 inline-flex items-center gap-1.5"
                             >
-                              Direct WhatsApp
+                              <WhatsAppIcon className="w-3.5 h-3.5 fill-emerald-600" />
+                              <span>Direct WhatsApp</span>
                             </a>
                           )}
                           <button
@@ -2213,7 +2221,7 @@ export function SuperAdminDashboard({ setActivePage }) {
                               rel="noreferrer"
                               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                             >
-                              <MessageSquare className="w-3.5 h-3.5" />
+                              <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
                               <span>WhatsApp</span>
                             </a>
                           )}

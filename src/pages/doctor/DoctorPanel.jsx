@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { workflowApi } from '../../services/api.js';
 import { PrescriptionSlipModal } from '../../components/common/PrescriptionSlipModal.jsx';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon.jsx';
 import {
   Stethoscope,
   ShieldAlert,
@@ -241,12 +242,14 @@ export function DoctorPanel({ setActivePage }) {
     if (!silent) setLoading(true);
     try {
       const docBadge = String(currentUser?.doctor_id || '').toLowerCase().trim();
+      const docLoginId = String(currentUser?.login_id || '').toLowerCase().trim();
       const docNumericId = String(currentUser?.id || '').trim();
+      const docNumericId2 = String(currentUser?.doctor_numeric_id || '').trim();
       const docName = String(currentUser?.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
 
       const res = await workflowApi.getRegistrations({ 
         search: searchQuery, 
-        doctorId: currentUser?.doctor_id || currentUser?.id 
+        doctorId: currentUser?.doctor_id || currentUser?.login_id || currentUser?.id 
       });
 
       if (res && res.success && Array.isArray(res.data)) {
@@ -260,12 +263,15 @@ export function DoctorPanel({ setActivePage }) {
           const pDocId = String(p.assigned_doctor_id || '').toLowerCase().trim();
           const pDocName = String(p.assigned_doctor_name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
 
-          const matchBadge = docBadge && pDocId === docBadge;
+          const matchBadge = docBadge && (pDocId === docBadge || pDocId.includes(docBadge));
+          const matchLogin = docLoginId && (pDocId === docLoginId || pDocId.includes(docLoginId));
           const matchNumeric = docNumericId && pDocId === docNumericId;
-          const matchNumericField = p.assigned_doctor_numeric_id && String(p.assigned_doctor_numeric_id).trim() === docNumericId;
+          const matchNumeric2 = docNumericId2 && pDocId === docNumericId2;
+          const matchNumericField = (docNumericId && p.assigned_doctor_numeric_id && String(p.assigned_doctor_numeric_id).trim() === docNumericId) || 
+                                    (docNumericId2 && p.assigned_doctor_numeric_id && String(p.assigned_doctor_numeric_id).trim() === docNumericId2);
           const matchName = docName && pDocName && (pDocName.includes(docName) || docName.includes(pDocName));
 
-          return matchBadge || matchNumeric || matchNumericField || matchName;
+          return matchBadge || matchLogin || matchNumeric || matchNumeric2 || matchNumericField || matchName;
         });
 
         // STRICTLY set to assigned patients only - NEVER fall back to all registrations!
@@ -384,7 +390,8 @@ export function DoctorPanel({ setActivePage }) {
         doctor_notes: consultationForm.doctor_notes,
         next_appointment_date: consultationForm.next_appointment_date,
         next_appointment_time: consultationForm.next_appointment_time,
-        follow_up_instructions: consultationForm.follow_up_instructions
+        follow_up_instructions: consultationForm.follow_up_instructions,
+        hostUrl: window.location.origin
       };
 
       const res = await workflowApi.submitConsultation(payload);
@@ -890,7 +897,7 @@ export function DoctorPanel({ setActivePage }) {
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md shadow-emerald-950/20 whitespace-nowrap cursor-pointer transition-all hover:scale-[1.02]"
                   >
-                    <MessageSquare className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4 fill-white" />
                     <span>Send Message on WhatsApp (१-क्लिकने पाठवा)</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
@@ -1240,7 +1247,7 @@ export function DoctorPanel({ setActivePage }) {
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">WhatsApp Delivery</span>
                   <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 stat-icon-bounce">
-                    <MessageSquare className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4 fill-emerald-600" />
                   </div>
                 </div>
                 <div className="text-2xl font-black text-[#022c22] my-1">

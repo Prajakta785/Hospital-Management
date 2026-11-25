@@ -174,6 +174,42 @@ router.post('/login', async (req, res) => {
       phone: user.phone
     };
 
+    if (user.role === 'doctor') {
+      const docMatch = doctors.find(d => 
+        (d.user_id && d.user_id === user.id) ||
+        (d.email && d.email.toLowerCase() === user.email.toLowerCase()) ||
+        (d.login_id && user.login_id && d.login_id.toLowerCase() === user.login_id.toLowerCase()) ||
+        (d.name && user.name && d.name.toLowerCase().includes(user.name.toLowerCase().replace(/^dr\.?\s*/i, '')))
+      );
+      if (docMatch) {
+        userData.doctor_id = docMatch.doctor_id || 'DOC-2026-1001';
+        userData.doctor_numeric_id = docMatch.id;
+        userData.specialty = docMatch.specialty || user.specialty || 'General Medicine';
+        userData.room_number = docMatch.room_number || 'OPD Suite 204';
+        userData.department = docMatch.department || user.department;
+      } else {
+        userData.doctor_id = user.login_id || 'DOC-2026-1001';
+        userData.doctor_numeric_id = user.id;
+        userData.specialty = user.specialty || 'General Medicine';
+      }
+    }
+
+    if (user.role === 'nurse') {
+      const nurseMatch = nurses.find(n => 
+        (n.user_id && n.user_id === user.id) ||
+        (n.email && user.email && n.email.toLowerCase() === user.email.toLowerCase()) ||
+        (n.login_id && user.login_id && n.login_id.toLowerCase() === user.login_id.toLowerCase()) ||
+        (n.name && user.name && n.name.toLowerCase().includes(user.name.toLowerCase()))
+      );
+      if (nurseMatch) {
+        userData.nurse_id = nurseMatch.nurse_id || 'NUR101';
+        userData.department = nurseMatch.department;
+        userData.shift = nurseMatch.shift;
+      } else {
+        userData.nurse_id = user.login_id || 'NUR101';
+      }
+    }
+
     return res.json({
       success: true,
       message: 'Login successful',
@@ -381,6 +417,8 @@ router.get('/lookup-patient', async (req, res) => {
       (c.patient_name && fullName && c.patient_name.toLowerCase().trim() === fullName.toLowerCase().trim())
     );
 
+    const latestConsultation = pastConsultations.length > 0 ? pastConsultations[pastConsultations.length - 1] : null;
+
     return res.json({
       success: true,
       found: true,
@@ -398,7 +436,10 @@ router.get('/lookup-patient', async (req, res) => {
         emergency_contact: emergencyContact,
         last_symptoms: (matchedReg && matchedReg.symptoms) || '',
         registered_at: (matchedReg && matchedReg.registered_at) || (matchedPatient && matchedPatient.created_at) || '',
-        past_visits_count: pastConsultations.length
+        past_visits_count: pastConsultations.length,
+        status: matchedReg?.status || (latestConsultation ? 'Completed' : 'Pending'),
+        latest_consultation: latestConsultation,
+        latest_registration: matchedReg || null
       }
     });
   } catch (err) {
@@ -457,9 +498,32 @@ async function syncFromCloud() {
         if (matchIndex === -1) {
           localList.unshift(cloudItem);
           count++;
-        } else if (cloudItem.status && cloudItem.status !== localList[matchIndex].status) {
-          localList[matchIndex] = { ...localList[matchIndex], ...cloudItem };
-          count++;
+        } else {
+          // If the patient is already present locally, preserve local clinical progress!
+          // NEVER overwrite an Assigned, In Consultation, or Completed patient with cloud's initial Pending status.
+          const localItem = localList[matchIndex];
+          const statusOrder = { 'Pending': 1, 'Assigned': 2, 'In Consultation': 3, 'Completed': 4 };
+          const localRank = statusOrder[localItem.status] || 1;
+          const cloudRank = statusOrder[cloudItem.status] || 1;
+
+          // Only update if cloud has reached a strictly more advanced clinical status
+          if (cloudRank > localRank) {
+            localList[matchIndex] = {
+              ...localItem,
+              ...cloudItem,
+              // Preserve existing local clinical assignments
+              assigned_doctor_id: cloudItem.assigned_doctor_id || localItem.assigned_doctor_id,
+              assigned_doctor_name: cloudItem.assigned_doctor_name || localItem.assigned_doctor_name,
+              assigned_doctor_specialty: cloudItem.assigned_doctor_specialty || localItem.assigned_doctor_specialty,
+              assigned_doctor_numeric_id: cloudItem.assigned_doctor_numeric_id || localItem.assigned_doctor_numeric_id,
+              assigned_nurse_name: cloudItem.assigned_nurse_name || localItem.assigned_nurse_name,
+              nurse_notes: cloudItem.nurse_notes || localItem.nurse_notes,
+              consultation_id: cloudItem.consultation_id || localItem.consultation_id,
+              prescription_id: cloudItem.prescription_id || localItem.prescription_id,
+              medicines: (cloudItem.medicines && cloudItem.medicines.length > 0) ? cloudItem.medicines : localItem.medicines
+            };
+            count++;
+          }
         }
 
         // Also populate general patients collection for EHR consistency
@@ -574,7 +638,15 @@ router.get('/registrations', async (req, res) => {
 // GET /api/workflow/registrations/:id
 router.get('/registrations/:id', async (req, res) => {
   try {
-    const reg = await db.findById('patient_registrations', req.params.id);
+    let reg = await db.findById('patient_registrations', req.params.id);
+    if (!reg) {
+      const list = await db.getCollection('patient_registrations');
+      reg = list.find(r => 
+        r.patient_id === req.params.id || 
+        String(r.id) === String(req.params.id) ||
+        (r.phone && r.phone === req.params.id)
+      );
+    }
     if (!reg) {
       return res.status(404).json({ success: false, message: 'Patient registration record not found.' });
     }

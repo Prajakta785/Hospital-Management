@@ -18,6 +18,7 @@ import { ReceiptModal } from '../../components/common/ReceiptModal.jsx';
 import { LabReportModal } from '../../components/common/LabReportModal.jsx';
 import { PrescriptionSlipModal } from '../../components/common/PrescriptionSlipModal.jsx';
 import { QRCodeToken } from '../../components/common/QRCodeToken.jsx';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon.jsx';
 import { Badge } from '../../components/common/Badge.jsx';
 import {
   LayoutDashboard,
@@ -1703,7 +1704,7 @@ export function PatientPortal({ setActivePage }) {
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                           notif.type === 'whatsapp' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {notif.type === 'whatsapp' ? <MessageSquare className="w-5 h-5 text-[#0284c7]" /> : <Bell className="w-5 h-5 text-blue-700" />}
+                          {notif.type === 'whatsapp' ? <WhatsAppIcon className="w-5 h-5 fill-emerald-600" /> : <Bell className="w-5 h-5 text-blue-700" />}
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between flex-wrap gap-2">

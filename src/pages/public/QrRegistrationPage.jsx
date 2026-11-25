@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import QRCode from 'qrcode';
 import { workflowApi } from '../../services/api.js';
+import { PrescriptionSlipModal } from '../../components/common/PrescriptionSlipModal.jsx';
 import {
   QrCode,
   User,
@@ -89,6 +90,38 @@ export function QrRegistrationPage({ setActivePage }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [registeredPatient, setRegisteredPatient] = useState(null);
+  const [liveStatus, setLiveStatus] = useState(null);
+  const [viewingRx, setViewingRx] = useState(null);
+  const [rxModalOpen, setRxModalOpen] = useState(false);
+
+  // Poll live status when patient has registered
+  React.useEffect(() => {
+    if (!registeredPatient) {
+      setLiveStatus(null);
+      return;
+    }
+    const regId = registeredPatient.id || registeredPatient.patient_id;
+    let isMounted = true;
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`/api/workflow/registrations/${regId}`);
+        const data = await res.json();
+        if (isMounted && data.success && data.data) {
+          setLiveStatus(data.data);
+        }
+      } catch (e) {
+        // ignore polling network errors
+      }
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [registeredPatient]);
 
   // When a patient scans again or opens a fresh registration session, reset all states
   React.useEffect(() => {
@@ -489,10 +522,45 @@ export function QrRegistrationPage({ setActivePage }) {
                 <div className="text-2xl sm:text-3xl font-black text-[#022c22] tracking-tight font-mono my-1">
                   {registeredPatient.patient_id}
                 </div>
-                <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-white px-3 py-1 rounded-full border border-emerald-200 mt-1">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  Status: Pending Nurse Review
-                </div>
+
+                {/* Dynamic Live Status */}
+                {liveStatus?.status === 'Completed' ? (
+                  <div className="space-y-3 mt-3">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 px-3.5 py-1.5 rounded-full border border-emerald-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>तपासणी पूर्ण झाली! (Consultation Completed)</span>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewingRx(liveStatus);
+                          setRxModalOpen(true);
+                        }}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#059669] hover:bg-[#047857] text-white rounded-xl text-xs sm:text-sm font-extrabold shadow-md cursor-pointer animate-pulse"
+                      >
+                        <FileText className="w-4 h-4 text-amber-300" />
+                        <span>📄 डॉक्टरांचा अहवाल व प्रिस्क्रिप्शन पहा (View Prescription Slip)</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (liveStatus?.status === 'Assigned' || liveStatus?.status === 'In Consultation') ? (
+                  <div className="space-y-1 mt-2">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-800 bg-teal-100 px-3 py-1 rounded-full border border-teal-300">
+                      <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
+                      <span>डॉक्टर नियुक्त झाले: <strong>{liveStatus.assigned_doctor_name || 'Assigned'}</strong></span>
+                    </div>
+                    {liveStatus.assigned_doctor_specialty && (
+                      <p className="text-[11px] text-teal-900 font-semibold">{liveStatus.assigned_doctor_specialty}</p>
+                    )}
+                    <p className="text-[10px] text-slate-500">कृपया ओपीडी केबिनजवळ प्रतीक्षा करा (Please wait near OPD)</p>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-white px-3 py-1 rounded-full border border-emerald-200 mt-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    Status: Pending Nurse Triage &amp; Review
+                  </div>
+                )}
               </div>
 
               {/* Patient Summary grid */}
@@ -799,6 +867,34 @@ export function QrRegistrationPage({ setActivePage }) {
                       </div>
                     )}
 
+                    {/* If Doctor Consultation Completed, Show Prescription Button */}
+                    {(existingPatientData.latest_consultation || existingPatientData.status === 'Completed') && (
+                      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+                        <div className="text-center sm:text-left">
+                          <span className="text-xs font-bold text-emerald-950 flex items-center justify-center sm:justify-start gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span>डॉक्टरांचा तपासणी अहवाल उपलब्ध आहे (Doctor Report Ready)</span>
+                          </span>
+                          <span className="text-[11px] text-emerald-800 font-medium block mt-0.5">
+                            {existingPatientData.latest_consultation?.doctor_name 
+                              ? `तपासणारे डॉक्टर: ${existingPatientData.latest_consultation.doctor_name} (${existingPatientData.latest_consultation.doctor_specialty || 'OPD'})` 
+                              : 'मागील सल्लामसलत व औषध प्रिस्क्रिप्शन उपलब्ध आहे.'}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setViewingRx(existingPatientData.latest_consultation || existingPatientData.latest_registration);
+                            setRxModalOpen(true);
+                          }}
+                          className="px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
+                        >
+                          <FileText className="w-4 h-4 text-amber-300" />
+                          <span>प्रिस्क्रिप्शन पहा (View Rx)</span>
+                        </button>
+                      </div>
+                    )}
+
                     {/* Fast 1-Click Check-in Form */}
                     <form onSubmit={handleExistingCheckin} className="space-y-4 pt-2 border-t border-slate-100">
                       <div>
@@ -1085,6 +1181,15 @@ export function QrRegistrationPage({ setActivePage }) {
           </div>
         )}
       </div>
+
+      {/* Printable Digital Prescription Slip Modal */}
+      {rxModalOpen && viewingRx && (
+        <PrescriptionSlipModal
+          isOpen={rxModalOpen}
+          onClose={() => setRxModalOpen(false)}
+          prescription={viewingRx}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { workflowApi } from '../../services/api.js';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon.jsx';
 import {
   Printer,
   Download,
@@ -177,7 +178,7 @@ export function PrescriptionViewPage({ prescriptionId, onBack }) {
             onClick={handleShareWhatsApp}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer"
           >
-            <MessageCircle className="w-3.5 h-3.5" />
+            <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
             Share WhatsApp
           </button>
           <button
